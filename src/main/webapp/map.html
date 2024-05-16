@@ -18,9 +18,9 @@
 <div id="map" class="map"></div>
 
 <script>
-    // Coordinate per la posizione desiderata
-    var longitude = 46.07;
-    var latitude = 11.12;
+    // Coordinate per la posizione desiderata del centro
+    var longitude = 11.12;
+    var latitude =46.07 ;
 
     // Inizializza la mappa OpenLayers
     var map = new ol.Map({
@@ -32,7 +32,7 @@
         ],
         view: new ol.View({
             center: ol.proj.fromLonLat([longitude, latitude]), // Imposta il centro della mappa
-            zoom: 10 // Imposta lo zoom iniziale
+            zoom: 13 // Imposta lo zoom iniziale
         })
     });
 </script>
