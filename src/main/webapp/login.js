@@ -1,4 +1,6 @@
 var form = document.querySelector('#formAccesso');
+var url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/?retryWrites=true&w=majority&appName=IngSoftwareDB"
+const MongoClient = require('mongoose');
 /** MAIN FUNCTION **/
 function logIn() {
     //preparing request
@@ -6,14 +8,24 @@ function logIn() {
     let formValues = new FormData(form);
 
     //Making request to mongodb
+    MongoClient.connect(url);
+    const RegUser = MongoClient.model('RegUser', {
+        username: { type: String },
+        password: { type: String },
+        email: { type: String },
+        auth: { type: String },
+        suspended: { type: String }
+    });
 
-    //Ricevo la risposta
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let responseJSON = JSON.parse(this.response);
+    RegUser.find({username: document.username }, {password: document.password}, function (err, docs) {
+        if(err)
+            console.log(err);
+        else
+            console.log("First function call : ", docs);
             resetForm();
-        }
-    }
+
+    })
+
 }
 
 /** SECONDARY FUNCTIONS **/
