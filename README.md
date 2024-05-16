@@ -7,12 +7,17 @@ Il nostro progetto riguarda la creazione di una webapp che da la possibilità ai
 >PROBLEMATICHE DA RISOLVERE
 
 -La mancanza di un'interfaccia utente-utente
+
 -Creare un portale dove notificare i problemi infrastrutturali
+
 -Evitare il disgio pubblico causato dai malfunzionamenti
 
 >LE UTILITÁ
 
 -Individuare i percorsi alternativi che possano evitare le strade bloccate
+
 -Risoluzione tempestiva dei problemi
+
 -Servizio in tempo reale
+
 -Segnalazioni rapide agli enti di competenza
