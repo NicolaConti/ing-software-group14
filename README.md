@@ -1,23 +1,15 @@
-# Mappatura disservizi urbani
+MAPPATURA DISSERVIZI URBANI
 
-### Il nostro progetto
-Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.
+>IL PROGETTO
+Il nostro progetto riguarda la creazione di una webapp che da la possibilità ai cittadini di poter segnalare e visualizzare in tempo reale svariate problematiche che si potrebbero riscontrare in giro per la città. È un servizio che deve dare la possibilità ad ogni cittadino di poter monitorare la situazione in città ma deve anche dare una mano al Comune di poter trovare e intervenire il prima possibile.
 
-### Problemi da risolvere
+>PROBLEMATICHE DA RISOLVERE
+-La mancanza di un'interfaccia utente-utente
+-Creare un portale dove notificare i problemi infrastrutturali
+-Evitare il disgio pubblico causato dai malfunzionamenti
 
-- mancanza di un'interfaccia utente-utente
-- creare un portale dove notificare problemi infrastrutturali
-- evitare disagio pubblico causa malfunzionamenti
-
-### Perché sarebbe utile?
-
-- Individuare percorsi alternativi
-- Risoluzione tempestiva
-- Servizio in real time
-- Segnalazioni rapide agli enti competenti
-
-### Installazione
-
-...
-
-### 
+>LE UTILITÁ
+-Individuare i percorsi alternativi che possano evitare le strade bloccate
+-Risoluzione tempestiva dei problemi
+-Servizio in tempo reale
+-Segnalazioni rapide agli enti di competenza
