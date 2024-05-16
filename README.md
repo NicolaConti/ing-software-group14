@@ -1,7 +1,7 @@
 # Mappatura disservizi urbani
 
 ### Il nostro progetto
-Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott;occhio questi elementi in tempo reale.
+Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.
 
 ### Problemi da risolvere
 
@@ -9,7 +9,7 @@ Un servizio accessibile dove poter segnalare i vari problemi della citta' al Com
 - creare un portale dove notificare problemi infrastrutturali
 - evitare disagio pubblico causa malfunzionamenti
 
-### Perche' sarebbe utile?
+### Perché sarebbe utile?
 
 - Individuare percorsi alternativi
 - Risoluzione tempestiva
