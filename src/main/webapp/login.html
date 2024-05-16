@@ -101,9 +101,10 @@
   </style>
 </head>
 <body>
+<script src="../webapp/login-server.js"></script>
 <div class="login-container">
   <h2>Mappatura disservizi urbani</h2>
-  <form id="login-form">
+  <form id="login-form" action="/login" method="post">
     <div class="form-group">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required>
@@ -112,7 +113,7 @@
       <label for="password">Password</label>
       <input type="password" id="password" name="password" required>
     </div>
-    <button type="submit" onclick="logIn()">Accedi</button>
+    <button type="submit">Accedi</button>
   </form>
   <div class="forgot-password">
     <a href="../webapp/recovery.html">Hai dimenticato la password?</a>
@@ -124,6 +125,26 @@
     <a href="../webapp/map.html">Entra come ospite</a>
   </div>
 </div>
-<script src="login.js"></script>
+<script>
+  document.getElementById('login-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const username = formData.get('username');
+    const password = formData.get('password');
+
+    // Send login request to server
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (response.ok) {
+      alert('Login successful');
+    } else {
+      alert('Login failed: ' + await response.text());
+    }
+  });
+</script>
 </body>
 </html>
