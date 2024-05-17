@@ -10,7 +10,7 @@ Il nostro progetto riguarda la creazione di una webapp che da la possibilità ai
 
 -Creare un portale dove notificare i problemi infrastrutturali
 
--Evitare il disgio pubblico causato dai malfunzionamenti
+-Evitare il disagio pubblico causato dai malfunzionamenti
 
 >LE UTILITÁ
 
@@ -21,3 +21,21 @@ Il nostro progetto riguarda la creazione di una webapp che da la possibilità ai
 -Servizio in tempo reale
 
 -Segnalazioni rapide agli enti di competenza
+
+>Installazione e utilizzo
+
+Verificare che tutte le dependencies relative a node.js siano state installate correttamente.
+
+Nel terminale, eseguire:
+```
+cd src/main/webapp
+node login-server.js
+```
+
+Recarsi sul browser all'indirizzo http://localhost:3000 dove comparirà la pagina di login.
+
+Le credenziali di testing sono:
+```
+username: Utente1
+password: passUtente1
+```
