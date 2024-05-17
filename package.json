@@ -1,0 +1,21 @@
+{
+  "name": "ingsoftware",
+  "version": "1.0.0",
+  "description": "### Il nostro progetto Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.6.2",
+    "mongoose": "^8.3.5"
+  },
+  "devDependencies": {
+    "@types/webpack-env": "^1.18.5"
+  }
+}
