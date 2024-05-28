@@ -109,8 +109,8 @@ app.post('/SignIn', async (req, res) => {
     }
 
     try {
-        const existingUsername = await RegUser.findOne({ username: username }).exec();
-        const existingEmail = await RegUser.findOne({ email: email }).exec();
+        const existingUsername = await RegUser.findOne({ username: username }, null, null).exec();
+        const existingEmail = await RegUser.findOne({ email: email }, null, null).exec();
 
         if (existingUsername) {
             return res.status(401).send('username already taken');
@@ -128,45 +128,9 @@ app.post('/SignIn', async (req, res) => {
         fs.appendFileSync('registered_users.txt', registrationData);
 
         // Send success response and redirect to map.html
-        res.status(200).sendFile(path.join(__dirname, 'webapp/map.html'));
+        res.status(200).sendFile(path.join(__dirname, 'map.html'));
     } catch (err) {
         console.error("Error registering user:", err);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Route for user login
-app.post('/login', async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    try {
-        // Log the incoming username and password
-        console.log("Attempting login with:", username, password);
-
-        let query = RegUser.findOne();
-        query.where('username', username);
-        query.where('password', password);
-
-        user = await query.exec();
-
-        // Log the result of the query (for debugging)
-        console.log("Query result:", user);
-        if (user) {
-            // User found, login successful
-
-            RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
-                console.log("User auth updated successfully (login)");
-            }).catch((err) => {
-                console.error("Error updating user auth (login): ", err);
-            });
-
-            res.send('Login successful');
-        } else {
-            // User not found or password incorrect, login failed
-            res.status(401).send('Invalid username or password');
-        }
-    } catch (err) {
-        console.error("Error during login:", err);
         res.status(500).send('Internal server error');
     }
 });
