@@ -4,9 +4,11 @@
   "description": "### Il nostro progetto Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start-login": "node login-server.js",
+    "start-signin": "node signin-server.js",
+    "start": "concurrently \"npm run start-login\" \"npm run start-signin\""
   },
-  "author": "",
+  "author": "NicolaConti",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
@@ -17,7 +19,6 @@
     "mongoose": "^8.3.5"
   },
   "devDependencies": {
-    "@types/webpack-env": "^1.18.5"
-  }
+    "@types/webpack-env": "^1.18.5"}
 }
 

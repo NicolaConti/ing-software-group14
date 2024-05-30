@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #4CAF50;
+            margin: 0;
+            padding: 0;
+        }
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 450px;
+            margin: 100px auto;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #8B4513;
+        }
+        label {
+            display: block;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .login-container .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .login-container .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>Admin Login</h2>
+    <form id="admin-login-form" action="/admin-login" method="POST">
+        <div class="form-group">
+            <label for="username"></label>
+            <input type="text" id="username" name="username" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+            <label for="password"></label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+        <button class="btn" type="submit">Login</button>
+    </form>
+    <form id="form-recovery" action="/recovery" method="get">
+        <button class="btn" type="submit">Hai dimenticato la password?</button>
+    </form>
+</div>
+<script>
+    document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const username = formData.get('username');
+        const password = formData.get('password');
+        console.log("username:", username);
+        console.log("password:", password);
+
+        // Send login request to server
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+            alert('Login successful');
+            window.location.href="admin-dashboard.html";
+            //manda a dashboard admin
+        } else {
+            alert('Login failed: ' + await response.text());
+        }
+    });
+</script>
+</body>
+</html>

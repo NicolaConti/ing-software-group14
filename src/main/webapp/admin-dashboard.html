@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            padding: 0;
+            background-color: #4CAF50;
+        }
+
+        .admin-dashboard-header {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h2 {
+            text-align: center;
+            flex: 1;
+            margin: 0;
+            color: #8B4513;
+        }
+
+        .dashboard-container {
+            margin-top: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            background-color: #4CAF50;
+        }
+
+        .section {
+            height: calc(100vh - 130px);
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="admin-dashboard-header">
+    <h2>Admin Dashboard</h2>
+    <form id="login-form" action="/logout" method="post" style="">
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+<div class="dashboard-container">
+    <div class="section">
+        div1
+    </div>
+    <div class="section">
+        div2
+    </div>
+    <div class="section">
+        div3
+    </div>
+</div>
+
+</body>
+</html>
