@@ -1,4 +1,3 @@
-// segnalazioniController.js
 
 const Segnalazione = require('../models/segnalazione');
 
