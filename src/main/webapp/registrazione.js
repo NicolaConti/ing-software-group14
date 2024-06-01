@@ -1,5 +1,3 @@
-var valid = document.querySelector('#register-form');
-
 function checkCampi(event) {
     event.preventDefault(); // Prevent form submission
     valid.form = document.getElementById('register-form');
@@ -22,17 +20,50 @@ function checkUsername() {
                 valid.error_username.innerText = 'Errore: Username già in uso';
             } else {
                 valid.error_username.innerText = '';
-                makeQuery();
+                checkEmail();
             }
         }
     };
     xhttp.send();
 }
 
+function checkEmail() {
+    let email = document.getElementById('email').value;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) {
+        valid.hasError = true;
+        valid.error_email.innerText = 'Errore: Formato email non valido';
+    } else {
+        valid.error_email.innerText = '';
+        checkPassword();
+    }
+}
+
+
+function checkPassword() {
+    let password = document.getElementById('password').value;
+    const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!re.test(password)) {
+        valid.hasError = true;
+        valid.error_password.innerText = 'Errore: La password deve contenere almeno 8 caratteri, lettere e numeri';
+    } else {
+        valid.error_password.innerText = '';
+        makeQuery();
+    }
+}
+
 function makeQuery() {
+    if (valid.hasError) {
+        return;
+    }
     // Preparing request
     let form = document.querySelector('#register-form');
     let formValues = new FormData(form);
+
+    // Log the form values
+    for (let [key, value] of formValues.entries()) {
+        console.log(key, value);
+    }
 
     // Making request
     let xhttp = new XMLHttpRequest();
@@ -67,6 +98,7 @@ function makeQuery() {
         }
     };
 }
+
 
 function resetForm() {
     valid.form.reset();

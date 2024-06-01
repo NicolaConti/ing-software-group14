@@ -9,6 +9,7 @@ const app = express();
 const port = 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
+
 // Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
@@ -32,14 +33,14 @@ const regUserSchema = new mongoose.Schema({
     email: String,
     auth: String,
     suspended: String
-}, {collection: 'RegisteredUser'});
+}, { collection: 'RegisteredUser' });
 
 // Define the model for the 'RegUser' collection
 const RegUser = mongoose.model('RegUser', regUserSchema);
 
-app.use(cors());
+/*app.use(cors());
 // Middleware to parse JSON body
-app.use(bodyParser.json());
+app.use(bodyParser.json()); //app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from the 'webapp' directory
 app.use(express.static(path.join(__dirname, 'webapp'), {
     // Set headers to force the correct MIME type for .js files
@@ -48,27 +49,33 @@ app.use(express.static(path.join(__dirname, 'webapp'), {
             res.setHeader('Content-Type', 'text/javascript');
         }
     }
-}));
+}));*/
+
 
 // Define a route handler for the root URL ("/")
 app.get('/', (req, res) => {
     // Send the login.html file when the root URL is accessed
+    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/login', (req, res) => {
+    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/map', (req, res) => {
+    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'map.html'));
 });
 
 app.get('/registrazione', (req, res) => {
+    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'registrazione.html'));
 });
 
 app.get('/recovery', (req, res) => {
+    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'recovery.html'));
 });
 
@@ -78,26 +85,19 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
-// Utility function to validate password format (example: at least 6 characters)
-function validatePassword(password) {
-    return password.length >= 6;
-}
 
-// Route for checking username availability
-app.get('/check-username', async (req, res) => {
-    const username = req.query.username;
-    try {
-        const user = await RegUser.findOne({ username: username }).exec();
-        res.status(200).json({ exists: !!user });
-    } catch (err) {
-        console.error("Error checking username:", err);
-        res.status(500).send('Internal server error');
-    }
-});
+// Utility function to validate password format (at least 8 characters, letters and numbers)
+function validatePassword(password) {
+    const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    return re.test(String(password));
+}
 
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
+    app.use(bodyParser.urlencoded({ extended: true }))
     const { username, password, email } = req.body;
+
+    console.log('Received data:', req.body);
 
     // Validate email and password format
     if (!validateEmail(email)) {
@@ -135,8 +135,22 @@ app.post('/SignIn', async (req, res) => {
     }
 });
 
+
+// Route for checking username availability
+app.get('/check-username', async (req, res) => {
+    app.use(bodyParser.urlencoded({ extended: true }))
+    const username = req.query.username;
+    try {
+        const user = await RegUser.findOne({ username: username }).exec();
+        res.status(200).json({ exists: !!user });
+    } catch (err) {
+        console.error("Error checking username:", err);
+        res.status(500).send('Internal server error');
+    }
+});
+
 app.post('/logout', async (req, res) => {
-    await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
+    await RegUser.updateOne({ username: user.username }, { $set: { auth: "0" } }).exec().then(() => {
         res.redirect('/login.html');
         console.log("Logout Successful");
         console.log("User auth updated successfully (logout)");
