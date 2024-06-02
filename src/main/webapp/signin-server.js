@@ -121,7 +121,7 @@ app.post('/SignIn', async (req, res) => {
         fs.appendFileSync('registered_users.txt', registrationData);
 
         // Send success response
-        res.status(200).json({ message: 'Registration successful' });
+        res.status(200).json({ redirect: '.../webapp/map.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });

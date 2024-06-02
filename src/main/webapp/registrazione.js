@@ -52,6 +52,13 @@ function checkPassword() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('#register-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        makeQuery();
+    });
+});
+
 function makeQuery() {
     if (valid.hasError) {
         return;
@@ -65,11 +72,6 @@ function makeQuery() {
     formValues.forEach((value, key) => {
         formObject[key] = value;
     });
-
-    // Log the form values
-    for (let [key, value] of formValues.entries()) {
-        console.log(key, value);
-    }
 
     // Making request
     let xhttp = new XMLHttpRequest();

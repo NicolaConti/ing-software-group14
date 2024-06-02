@@ -3,3 +3,8 @@
 2024-06-01T18:15:46.212Z - REGISTER - Username: marcopolo, Email: marco@polo.com
 2024-06-01T18:22:34.351Z - REGISTER - Username: ginopaolo, Email: gino@paolo.com
 2024-06-02T09:11:07.531Z - REGISTER - Username: rovax, Email: fabio@rovazzi.com
+2024-06-02T09:19:35.494Z - REGISTER - Username: infax, Email: gino@infa.com
+2024-06-02T09:24:16.590Z - REGISTER - Username: mariored, Email: mario@rossi.com
+2024-06-02T09:25:41.230Z - REGISTER - Username: lucagreen, Email: luca@verdi.com
+2024-06-02T09:47:18.842Z - REGISTER - Username: yellow88, Email: mario@giallo.com
+2024-06-02T09:50:54.495Z - REGISTER - Username: lollox, Email: lollo@lallo.com
