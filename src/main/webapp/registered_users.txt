@@ -8,3 +8,6 @@
 2024-06-02T09:25:41.230Z - REGISTER - Username: lucagreen, Email: luca@verdi.com
 2024-06-02T09:47:18.842Z - REGISTER - Username: yellow88, Email: mario@giallo.com
 2024-06-02T09:50:54.495Z - REGISTER - Username: lollox, Email: lollo@lallo.com
+2024-06-02T10:39:19.534Z - REGISTER - Username: cr7, Email: cristiano@ronaldo.com
+2024-06-02T10:43:51.604Z - REGISTER - Username: messi, Email: leo@messi.com
+2024-06-02T10:55:46.479Z - REGISTER - Username: pappa123, Email: pappa@poppo.com
