@@ -38,9 +38,11 @@ const regUserSchema = new mongoose.Schema({
 // Define the model for the 'RegUser' collection
 const RegUser = mongoose.model('RegUser', regUserSchema);
 
-/*app.use(cors());
-// Middleware to parse JSON body
-app.use(bodyParser.json()); //app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // Serve static files from the 'webapp' directory
 app.use(express.static(path.join(__dirname, 'webapp'), {
     // Set headers to force the correct MIME type for .js files
@@ -49,33 +51,26 @@ app.use(express.static(path.join(__dirname, 'webapp'), {
             res.setHeader('Content-Type', 'text/javascript');
         }
     }
-}));*/
-
+}));
 
 // Define a route handler for the root URL ("/")
 app.get('/', (req, res) => {
-    // Send the login.html file when the root URL is accessed
-    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/login', (req, res) => {
-    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/map', (req, res) => {
-    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'map.html'));
 });
 
 app.get('/registrazione', (req, res) => {
-    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'registrazione.html'));
 });
 
 app.get('/recovery', (req, res) => {
-    app.use(express.static(path.join(__dirname, 'webapp')));
     res.sendFile(path.join(__dirname, 'recovery.html'));
 });
 
@@ -85,7 +80,6 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
-
 // Utility function to validate password format (at least 8 characters, letters and numbers)
 function validatePassword(password) {
     const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
@@ -94,30 +88,29 @@ function validatePassword(password) {
 
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
-    app.use(bodyParser.urlencoded({ extended: true }))
     const { username, password, email } = req.body;
 
     console.log('Received data:', req.body);
 
     // Validate email and password format
     if (!validateEmail(email)) {
-        return res.status(400).send('wrong email format');
+        return res.status(400).json({ message: 'wrong email format' });
     }
 
     if (!validatePassword(password)) {
-        return res.status(400).send('wrong password format');
+        return res.status(400).json({ message: 'wrong password format' });
     }
 
     try {
-        const existingUsername = await RegUser.findOne({ username: username }, null, null).exec();
-        const existingEmail = await RegUser.findOne({ email: email }, null, null).exec();
+        const existingUsername = await RegUser.findOne({ username }).exec();
+        const existingEmail = await RegUser.findOne({ email }).exec();
 
         if (existingUsername) {
-            return res.status(401).send('username already taken');
+            return res.status(401).json({ message: 'username already taken' });
         }
 
         if (existingEmail) {
-            return res.status(400).send('email already taken');
+            return res.status(400).json({ message: 'email already taken' });
         }
 
         const newUser = new RegUser({ username, password, email, auth: "0", suspended: "0" });
@@ -127,18 +120,17 @@ app.post('/SignIn', async (req, res) => {
         const registrationData = `${new Date().toISOString()} - REGISTER - Username: ${username}, Email: ${email}\n`;
         fs.appendFileSync('registered_users.txt', registrationData);
 
-        // Send success response and redirect to map.html
-        res.status(200).sendFile(path.join(__dirname, 'map.html'));
+        // Send success response
+        res.status(200).json({ message: 'Registration successful' });
     } catch (err) {
         console.error("Error registering user:", err);
-        res.status(500).send('Internal server error');
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
 
 // Route for checking username availability
 app.get('/check-username', async (req, res) => {
-    app.use(bodyParser.urlencoded({ extended: true }))
     const username = req.query.username;
     try {
         const user = await RegUser.findOne({ username: username }).exec();

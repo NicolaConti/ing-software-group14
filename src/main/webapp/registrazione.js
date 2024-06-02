@@ -60,6 +60,12 @@ function makeQuery() {
     let form = document.querySelector('#register-form');
     let formValues = new FormData(form);
 
+    // Convert FormData to a plain object
+    let formObject = {};
+    formValues.forEach((value, key) => {
+        formObject[key] = value;
+    });
+
     // Log the form values
     for (let [key, value] of formValues.entries()) {
         console.log(key, value);
@@ -68,7 +74,8 @@ function makeQuery() {
     // Making request
     let xhttp = new XMLHttpRequest();
     xhttp.open('POST', '/SignIn', true);
-    xhttp.send(formValues);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    xhttp.send(JSON.stringify(formObject));
 
     // Receive response
     xhttp.onreadystatechange = function() {
@@ -76,16 +83,16 @@ function makeQuery() {
             if (this.status === 200) {
                 console.log("Risposta: " + this.responseText);
                 resetForm();
-                window.location.href = 'map.html';
+                window.location.href = 'map.html'; // Reindirizza a map.html
             } else if (this.status === 401) {
                 valid.error_username.innerText = 'Errore: Username già in uso';
             } else if (this.status === 400) {
-                let response = this.responseText;
-                if (response.includes('email already taken')) {
+                let response = JSON.parse(this.responseText);
+                if (response.message === 'email already taken') {
                     valid.error_email.innerText = 'Errore: Email già in uso';
-                } else if (response.includes('wrong email format')) {
+                } else if (response.message === 'wrong email format') {
                     valid.error_email.innerText = 'Errore: Formato email non valido';
-                } else if (response.includes('wrong password format')) {
+                } else if (response.message === 'wrong password format') {
                     valid.error_password.innerText = 'Errore: Formato password non valido';
                 } else {
                     console.log("Registrazione fallita");
@@ -98,6 +105,7 @@ function makeQuery() {
         }
     };
 }
+
 
 
 function resetForm() {
