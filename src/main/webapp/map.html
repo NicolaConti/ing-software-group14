@@ -7,28 +7,26 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol/dist/ol.css" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/ol/dist/ol.js"></script>
     <style>
-        /* Stile per il contenitore della mappa */
         #map {
             width: 100%;
             height: 800px;
         }
+
         #overlay, #modal, #commentModal {
+            display: none; /* Nasconde inizialmente i modali */
             position: absolute;
             background: white;
             padding: 10px;
             border: 1px solid black;
-            display: none;
+            z-index: 1000;
         }
-        #modal, #commentModal {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+
         .marker {
             width: 20px;
             height: 20px;
-            background: url('marker-icon.png') no-repeat center;
-            background-size: contain;
+            background-image: url('marker-icon.png');
+            background-size: cover;
+            border-radius: 50%;
             cursor: pointer;
         }
     </style>
@@ -85,99 +83,61 @@
         })
     });
 
-    // Funzione per mostrare il modal di segnalazione
-    function showModal(coordinate) {
-        var modal = document.getElementById('modal');
-        modal.style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-        // Salva la coordinata nel modal per l'uso successivo
-        modal.setAttribute('data-coordinate', coordinate);
-    }
+    // Aggiungi evento click sulla mappa per aggiungere segnalazioni
+    map.on('click', function (event) {
+        var coordinate = event.coordinate;
+        var lonLat = ol.proj.toLonLat(coordinate);
 
-    // Funzione per chiudere il modal di segnalazione
-    function chiudiModal() {
-        document.getElementById('modal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-    }
+        document.getElementById('modal').style.display = 'block';
+        document.getElementById('modal').style.left = event.pixel[0] + 'px';
+        document.getElementById('modal').style.top = event.pixel[1] + 'px';
 
-    // Funzione per aggiungere una segnalazione
-    function aggiungiSegnalazione() {
-        var modal = document.getElementById('modal');
-        var tipo = document.getElementById('tipo').value;
-        var commento = document.getElementById('commento').value;
-        var coordinate = modal.getAttribute('data-coordinate');
-        var [lon, lat] = coordinate.split(',').map(Number);
+        document.getElementById('aggiungiSegnalazione').onclick = function () {
+            var tipo = document.getElementById('tipo').value;
+            var commento = document.getElementById('commento').value;
+            aggiungiMarker(coordinate, tipo, commento);
+            document.getElementById('modal').style.display = 'none';
+        };
+    });
 
-        // Debugging: Verifica le coordinate
-        console.log(`Aggiungendo segnalazione a: ${coordinate}`);
-
-        // Invia la segnalazione al server
-        fetch('/api/segnalazioni', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tipo,
-                commento,
-                coordinate: [lon, lat]
-            })
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Errore nella risposta del server');
-            }
-            return response.json();
-        }).then(data => {
-            // Aggiungi il marker sulla mappa
-            aggiungiMarker(lon, lat, tipo, commento);
-            chiudiModal();
-        }).catch(error => {
-            console.error('Errore:', error);
-        });
-    }
-
-    // Funzione per aggiungere un marker sulla mappa
-    function aggiungiMarker(lon, lat, tipo, commento) {
-        var markerElement = document.createElement('div');
-        markerElement.className = 'marker';
-        markerElement.addEventListener('click', function() {
-            showCommentModal(tipo, commento);
-        });
-
+    // Funzione per aggiungere marker
+    function aggiungiMarker(coordinate, tipo, commento) {
         var marker = new ol.Overlay({
-            position: ol.proj.fromLonLat([lon, lat]),
+            position: coordinate,
             positioning: 'center-center',
-            element: markerElement
+            element: document.createElement('div'),
+            stopEvent: false
         });
+
+        marker.getElement().className = 'marker';
+        marker.getElement().title = tipo + ': ' + commento;
+        marker.getElement().onclick = function () {
+            alert('Tipo: ' + tipo + '\nCommento: ' + commento);
+        };
+
         map.addOverlay(marker);
     }
 
-    // Funzione per mostrare il modal di commento
-    function showCommentModal(tipo, commento) {
-        var commentModal = document.getElementById('commentModal');
-        document.getElementById('dettagliSegnalazione').innerText = `Tipo: ${tipo}\nCommento: ${commento}`;
-        commentModal.style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
+    // Funzioni per chiudere i modali
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
     }
 
-    // Funzione per chiudere il modal di commento
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
     }
 
-    // Gestisci il clic sulla mappa per aggiungere una nuova segnalazione
-    map.on('click', function(event) {
-        var coordinate = ol.proj.toLonLat(event.coordinate);
-        showModal(coordinate.join(','));
-    });
-
-    // Funzione per aggiungere un commento (da implementare se necessario)
-    function aggiungiCommento() {
-        var nuovoCommento = document.getElementById('nuovoCommento').value;
-        // Invia il nuovo commento al server (da implementare)
-        chiudiCommentModal();
-    }
+    // Logout
+    document.getElementById('login-form').onsubmit = function () {
+        fetch('/logout', {
+            method: 'POST',
+        }).then(function (response) {
+            if (response.ok) {
+                window.location.href = '/';
+            }
+        });
+        return false;
+    };
 </script>
 </body>
 </html>
