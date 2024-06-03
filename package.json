@@ -14,10 +14,9 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "mongodb": "^6.6.2",
-    "mongoose": "^8.3.5"
+    "mongoose": "^8.4.1"
   },
   "devDependencies": {
     "@types/webpack-env": "^1.18.5"
   }
 }
-

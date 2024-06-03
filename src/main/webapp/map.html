@@ -7,36 +7,30 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol/dist/ol.css" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/ol/dist/ol.js"></script>
     <style>
-        /* Stile per il contenitore della mappa */
         #map {
             width: 100%;
             height: 800px;
         }
-
-        #overlay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-        }
-
         #modal, #commentModal {
             display: none;
-            position: absolute;
-            background-color: white;
-            padding: 10px;
-            border: 1px solid black;
-            z-index: 1001;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
         }
-
-        #modal {
-            width: 300px;
-            height: 200px;
-        }
-
-        #commentModal {
-            width: 300px;
-            height: 250px;
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
     </style>
 </head>
@@ -70,55 +64,84 @@
 </div>
 
 <script>
-    // Coordinate per la posizione desiderata del centro
-    var longitude = 11.12;
-    var latitude = 46.07;
+    var isAuthenticated = true; // Imposta questa variabile in base all'autenticazione dell'utente
 
-    // Inizializza la mappa OpenLayers
     var map = new ol.Map({
         target: 'map',
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM() // Usa OpenStreetMap come layer di base
+                source: new ol.source.OSM()
             })
         ],
         view: new ol.View({
-            center: ol.proj.fromLonLat([longitude, latitude]), // Imposta il centro della mappa
-            zoom: 13 // Imposta lo zoom iniziale
+            center: ol.proj.fromLonLat([11.12, 46.07]),
+            zoom: 13
         })
     });
 
-    var selectedCoordinates;
-    var segnalazioniLayer = new ol.layer.Vector({
-        source: new ol.source.Vector()
+    var markersLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'https://openlayers.org/en/latest/examples/data/icon.png',
+                anchor: [0.5, 1],
+                scale: 0.1
+            })
+        })
     });
-    map.addLayer(segnalazioniLayer);
 
-    map.on('click', function (evt) {
-        selectedCoordinates = ol.proj.toLonLat(evt.coordinate);
-        document.getElementById('modal').style.display = 'block';
+    map.addLayer(markersLayer);
+
+    var currentCoordinates;
+
+    map.on('singleclick', function (evt) {
+        currentCoordinates = ol.proj.toLonLat(evt.coordinate);
+        if (isAuthenticated) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('modal').style.display = 'block';
+        } else {
+            alert("Devi essere autenticato per aggiungere segnalazioni.");
+        }
     });
+
+    function aggiungiSegnalino(longitude, latitude, tipo, commento) {
+        var marker = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
+            tipo: tipo,
+            commento: commento
+        });
+
+        markersLayer.getSource().addFeature(marker);
+
+        marker.on('click', function () {
+            mostraCommentModal(marker);
+        });
+    }
+
+    function mostraCommentModal(marker) {
+        document.getElementById('dettagliSegnalazione').innerText = `Tipo: ${marker.get('tipo')}\nCommento: ${marker.get('commento')}`;
+        document.getElementById('commentModal').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
 
     function chiudiModal() {
         document.getElementById('modal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
     }
 
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
     }
 
-    function aggiungiMarker(segnalazione) {
-        const coordinate = segnalazione.coordinate;
-        const marker = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat(coordinate)),
-            tipo: segnalazione.tipo,
-            commento: segnalazione.commento
-        });
+    function aggiungiSegnalazione() {
+        var tipo = document.getElementById('tipo').value;
+        var commento = document.getElementById('commento').value;
+        var longitude = currentCoordinates[0];
+        var latitude = currentCoordinates[1];
 
-        segnalazioniLayer.getSource().addFeature(marker);
-    }
+        aggiungiSegnalino(longitude, latitude, tipo, commento);
 
-    function creaSegnalazione(tipo, commento, coordinate) {
         fetch('/api/segnalazioni', {
             method: 'POST',
             headers: {
@@ -127,26 +150,31 @@
             body: JSON.stringify({
                 tipo: tipo,
                 commento: commento,
-                coordinate: coordinate
+                longitude: longitude,
+                latitude: latitude,
+                dataOra: new Date()
             })
         })
             .then(response => response.json())
             .then(data => {
-                aggiungiMarker(data);
+                console.log('Success:', data);
                 chiudiModal();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
             });
     }
 
-    function aggiungiSegnalazione() {
-        const tipo = document.getElementById('tipo').value;
-        const commento = document.getElementById('commento').value;
-
-        creaSegnalazione(tipo, commento, selectedCoordinates);
+    function aggiungiCommento() {
+        var nuovoCommento = document.getElementById('nuovoCommento').value;
+        // Logica per aggiungere il commento
     }
 </script>
 
 <form id="login-form" action="/logout" method="post">
     <button type="submit">Logout</button>
 </form>
+
+<script src="../webapp/login-server.js"></script>
 </body>
 </html>

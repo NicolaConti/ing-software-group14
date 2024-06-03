@@ -1,5 +1,5 @@
 // map.js
-/*
+
 var longitude = 11.12;
 var latitude = 46.07;
 var coordinateCliccate;
@@ -67,4 +67,3 @@ function aggiungiMarker(segnalazione) {
 }
 
 // Altre funzioni per interazioni utente, se necessario
-*/
