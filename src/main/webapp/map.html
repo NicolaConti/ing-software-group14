@@ -19,12 +19,7 @@
             border: 1px solid black;
             display: none;
         }
-        #modal {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        #commentModal {
+        #modal, #commentModal {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -125,7 +120,7 @@
     function aggiungiMarker(lon, lat, tipo, commento) {
         var markerElement = document.createElement('div');
         markerElement.className = 'marker';
-        markerElement.innerHTML = '<img src="marker-icon.png" alt="Marker">';
+        markerElement.innerHTML = '<img src="marker-icon.png" alt="Marker" style="width: 20px; height: 20px;">';
         markerElement.style.cursor = 'pointer';
         markerElement.addEventListener('click', function() {
             showCommentModal(tipo, commento);
