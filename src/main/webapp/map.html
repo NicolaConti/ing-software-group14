@@ -24,6 +24,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+        .marker {
+            width: 20px;
+            height: 20px;
+            background: url('marker-icon.png') no-repeat center;
+            background-size: contain;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +104,9 @@
         var coordinate = modal.getAttribute('data-coordinate');
         var [lon, lat] = coordinate.split(',').map(Number);
 
+        // Debugging: Verifica le coordinate
+        console.log(`Aggiungendo segnalazione a: ${coordinate}`);
+
         // Invia la segnalazione al server
         fetch('/api/segnalazioni', {
             method: 'POST',
@@ -108,20 +118,24 @@
                 commento,
                 coordinate: [lon, lat]
             })
-        }).then(response => response.json())
-            .then(data => {
-                // Aggiungi il marker sulla mappa
-                aggiungiMarker(lon, lat, tipo, commento);
-                chiudiModal();
-            });
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Errore nella risposta del server');
+            }
+            return response.json();
+        }).then(data => {
+            // Aggiungi il marker sulla mappa
+            aggiungiMarker(lon, lat, tipo, commento);
+            chiudiModal();
+        }).catch(error => {
+            console.error('Errore:', error);
+        });
     }
 
     // Funzione per aggiungere un marker sulla mappa
     function aggiungiMarker(lon, lat, tipo, commento) {
         var markerElement = document.createElement('div');
         markerElement.className = 'marker';
-        markerElement.innerHTML = '<img src="marker-icon.png" alt="Marker" style="width: 20px; height: 20px;">';
-        markerElement.style.cursor = 'pointer';
         markerElement.addEventListener('click', function() {
             showCommentModal(tipo, commento);
         });
