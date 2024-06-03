@@ -6,7 +6,30 @@
     <title>Mappa OpenLayers</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol/dist/ol.css" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/ol/dist/ol.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Stile per il contenitore della mappa */
+        #map {
+            width: 100%;
+            height: 800px;
+        }
+        #overlay, #modal, #commentModal {
+            position: absolute;
+            background: white;
+            padding: 10px;
+            border: 1px solid black;
+            display: none;
+        }
+        #modal {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #commentModal {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
 <body>
 <div id="map" class="map"></div>
@@ -37,10 +60,115 @@
     <button onclick="chiudiCommentModal()">Chiudi</button>
 </div>
 
+<script>
+    // Coordinate per la posizione desiderata del centro
+    var longitude = 11.12;
+    var latitude = 46.07;
+
+    // Inizializza la mappa OpenLayers
+    var map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM() // Usa OpenStreetMap come layer di base
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([longitude, latitude]), // Imposta il centro della mappa
+            zoom: 13 // Imposta lo zoom iniziale
+        })
+    });
+
+    // Funzione per mostrare il modal di segnalazione
+    function showModal(coordinate) {
+        var modal = document.getElementById('modal');
+        modal.style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        // Salva la coordinata nel modal per l'uso successivo
+        modal.setAttribute('data-coordinate', coordinate);
+    }
+
+    // Funzione per chiudere il modal di segnalazione
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    // Funzione per aggiungere una segnalazione
+    function aggiungiSegnalazione() {
+        var modal = document.getElementById('modal');
+        var tipo = document.getElementById('tipo').value;
+        var commento = document.getElementById('commento').value;
+        var coordinate = modal.getAttribute('data-coordinate');
+        var [lon, lat] = coordinate.split(',').map(Number);
+
+        // Invia la segnalazione al server
+        fetch('/api/segnalazioni', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo,
+                commento,
+                coordinate: [lon, lat]
+            })
+        }).then(response => response.json())
+            .then(data => {
+                // Aggiungi il marker sulla mappa
+                aggiungiMarker(lon, lat, tipo, commento);
+                chiudiModal();
+            });
+    }
+
+    // Funzione per aggiungere un marker sulla mappa
+    function aggiungiMarker(lon, lat, tipo, commento) {
+        var markerElement = document.createElement('div');
+        markerElement.className = 'marker';
+        markerElement.innerHTML = '<img src="marker-icon.png" alt="Marker">';
+        markerElement.style.cursor = 'pointer';
+        markerElement.addEventListener('click', function() {
+            showCommentModal(tipo, commento);
+        });
+
+        var marker = new ol.Overlay({
+            position: ol.proj.fromLonLat([lon, lat]),
+            positioning: 'center-center',
+            element: markerElement
+        });
+        map.addOverlay(marker);
+    }
+
+    // Funzione per mostrare il modal di commento
+    function showCommentModal(tipo, commento) {
+        var commentModal = document.getElementById('commentModal');
+        document.getElementById('dettagliSegnalazione').innerText = `Tipo: ${tipo}\nCommento: ${commento}`;
+        commentModal.style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    // Funzione per chiudere il modal di commento
+    function chiudiCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    // Gestisci il clic sulla mappa per aggiungere una nuova segnalazione
+    map.on('click', function(event) {
+        var coordinate = ol.proj.toLonLat(event.coordinate);
+        showModal(coordinate.join(','));
+    });
+
+    // Funzione per aggiungere un commento (da implementare se necessario)
+    function aggiungiCommento() {
+        var nuovoCommento = document.getElementById('nuovoCommento').value;
+        // Invia il nuovo commento al server (da implementare)
+        chiudiCommentModal();
+    }
+</script>
+
 <form id="login-form" action="/logout" method="post">
     <button type="submit">Logout</button>
 </form>
-
-<script src="map.js"></script>
 </body>
 </html>
