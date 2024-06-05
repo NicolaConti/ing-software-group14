@@ -11,30 +11,27 @@
             width: 100%;
             height: 800px;
         }
-
-        #overlay, #modal, #commentModal {
-            display: none; /* Nasconde inizialmente i modali */
+        #modal, #commentModal {
+            display: none;
             position: absolute;
-            background: white;
-            padding: 10px;
+            background-color: white;
+            padding: 20px;
             border: 1px solid black;
             z-index: 1000;
         }
-
-        .marker {
-            width: 20px;
-            height: 20px;
-            background-image: url('marker-icon.png');
-            background-size: cover;
-            border-radius: 50%;
-            cursor: pointer;
+        #modal {
+            top: 50px;
+            left: 50px;
+        }
+        #commentModal {
+            top: 150px;
+            left: 150px;
         }
     </style>
 </head>
 <body>
 <div id="map" class="map"></div>
 
-<div id="overlay"></div>
 <div id="modal">
     <label for="tipo">Tipo di Segnalazione:</label>
     <select id="tipo">
@@ -65,79 +62,88 @@
 </form>
 
 <script>
-    // Coordinate per la posizione desiderata del centro
-    var longitude = 11.12;
-    var latitude = 46.07;
-
-    // Inizializza la mappa OpenLayers
     var map = new ol.Map({
         target: 'map',
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM() // Usa OpenStreetMap come layer di base
+                source: new ol.source.OSM()
             })
         ],
         view: new ol.View({
-            center: ol.proj.fromLonLat([longitude, latitude]), // Imposta il centro della mappa
-            zoom: 13 // Imposta lo zoom iniziale
+            center: ol.proj.fromLonLat([11.12, 46.07]),
+            zoom: 13
         })
     });
 
-    // Aggiungi evento click sulla mappa per aggiungere segnalazioni
-    map.on('click', function (event) {
+    var overlay = new ol.Overlay({
+        element: document.getElementById('overlay')
+    });
+    map.addOverlay(overlay);
+
+    map.on('singleclick', function(event) {
         var coordinate = event.coordinate;
         var lonLat = ol.proj.toLonLat(coordinate);
-
         document.getElementById('modal').style.display = 'block';
-        document.getElementById('modal').style.left = event.pixel[0] + 'px';
-        document.getElementById('modal').style.top = event.pixel[1] + 'px';
-
-        document.getElementById('aggiungiSegnalazione').onclick = function () {
-            var tipo = document.getElementById('tipo').value;
-            var commento = document.getElementById('commento').value;
-            aggiungiMarker(coordinate, tipo, commento);
-            document.getElementById('modal').style.display = 'none';
-        };
+        overlay.setPosition(coordinate);
     });
 
-    // Funzione per aggiungere marker
-    function aggiungiMarker(coordinate, tipo, commento) {
-        var marker = new ol.Overlay({
-            position: coordinate,
-            positioning: 'center-center',
-            element: document.createElement('div'),
-            stopEvent: false
+    function aggiungiSegnalazione() {
+        var tipo = document.getElementById('tipo').value;
+        var commento = document.getElementById('commento').value;
+        var coordinate = overlay.getPosition();
+
+        var marker = new ol.Feature({
+            geometry: new ol.geom.Point(coordinate),
+            tipo: tipo,
+            commento: commento
         });
 
-        marker.getElement().className = 'marker';
-        marker.getElement().title = tipo + ': ' + commento;
-        marker.getElement().onclick = function () {
-            alert('Tipo: ' + tipo + '\nCommento: ' + commento);
-        };
+        marker.setStyle(new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'marker-icon.png',
+                scale: 0.1
+            })
+        }));
 
-        map.addOverlay(marker);
+        var vectorSource = new ol.source.Vector({
+            features: [marker]
+        });
+
+        var markerLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        map.addLayer(markerLayer);
+
+        document.getElementById('modal').style.display = 'none';
+
+        // Esempio di invio dati della segnalazione al server
+        fetch('/api/segnalazioni', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: tipo,
+                commento: commento,
+                coordinate: ol.proj.toLonLat(coordinate)
+            })
+        }).then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Errore:', error));
     }
 
-    // Funzioni per chiudere i modali
     function chiudiModal() {
         document.getElementById('modal').style.display = 'none';
+    }
+
+    function aggiungiCommento() {
+        // Implementazione per aggiungere commento aggiuntivo
     }
 
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
     }
-
-    // Logout
-    document.getElementById('login-form').onsubmit = function () {
-        fetch('/logout', {
-            method: 'POST',
-        }).then(function (response) {
-            if (response.ok) {
-                window.location.href = '/';
-            }
-        });
-        return false;
-    };
 </script>
 </body>
 </html>
