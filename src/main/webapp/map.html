@@ -85,12 +85,6 @@
     });
     map.addLayer(markerLayer);
 
-    map.on('singleclick', function(event) {
-        var coordinate = event.coordinate;
-        document.getElementById('modal').style.display = 'block';
-        overlay.setPosition(coordinate);
-    });
-
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
@@ -148,25 +142,25 @@
         var dettagli = `
             <p>Tipo: ${tipo}</p>
             <p>Commento: ${commento}</p>
-            <p>Coordinate: ${coordinate}</p>
+            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
         `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
         document.getElementById('commentModal').style.display = 'block';
     }
 
-    markerLayer.getSource().on('addfeature', function(event) {
-        var marker = event.feature;
-        marker.on('click', function() {
-            mostraSegnalazione(marker);
+    // Evento per aggiungere un nuovo marker
+    map.on('singleclick', function(event) {
+        var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
         });
-    });
 
-    map.on('click', function(event) {
-        map.forEachFeatureAtPixel(event.pixel, function(feature) {
-            if (feature.getGeometry().getType() === 'Point') {
-                mostraSegnalazione(feature);
-            }
-        });
+        if (feature) {
+            mostraSegnalazione(feature);
+        } else {
+            var coordinate = event.coordinate;
+            document.getElementById('modal').style.display = 'block';
+            overlay.setPosition(coordinate);
+        }
     });
 
     // Carica le segnalazioni dal server
