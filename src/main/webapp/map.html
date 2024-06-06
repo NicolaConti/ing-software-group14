@@ -80,9 +80,13 @@
     });
     map.addOverlay(overlay);
 
+    var markerLayer = new ol.layer.Vector({
+        source: new ol.source.Vector()
+    });
+    map.addLayer(markerLayer);
+
     map.on('singleclick', function(event) {
         var coordinate = event.coordinate;
-        var lonLat = ol.proj.toLonLat(coordinate);
         document.getElementById('modal').style.display = 'block';
         overlay.setPosition(coordinate);
     });
@@ -105,19 +109,10 @@
             })
         }));
 
-        var vectorSource = new ol.source.Vector({
-            features: [marker]
-        });
-
-        var markerLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
-
-        map.addLayer(markerLayer);
+        markerLayer.getSource().addFeature(marker);
 
         document.getElementById('modal').style.display = 'none';
 
-        // Esempio di invio dati della segnalazione al server
         fetch('/api/segnalazioni', {
             method: 'POST',
             headers: {
@@ -144,6 +139,58 @@
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
     }
+
+    function mostraSegnalazione(marker) {
+        var coordinate = marker.getGeometry().getCoordinates();
+        var tipo = marker.get('tipo');
+        var commento = marker.get('commento');
+
+        var dettagli = `
+            <p>Tipo: ${tipo}</p>
+            <p>Commento: ${commento}</p>
+            <p>Coordinate: ${coordinate}</p>
+        `;
+        document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
+        document.getElementById('commentModal').style.display = 'block';
+    }
+
+    markerLayer.getSource().on('addfeature', function(event) {
+        var marker = event.feature;
+        marker.on('click', function() {
+            mostraSegnalazione(marker);
+        });
+    });
+
+    map.on('click', function(event) {
+        map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            if (feature.getGeometry().getType() === 'Point') {
+                mostraSegnalazione(feature);
+            }
+        });
+    });
+
+    // Carica le segnalazioni dal server
+    fetch('/api/segnalazioni')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(segnalazione => {
+                var marker = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
+                    tipo: segnalazione.tipo,
+                    commento: segnalazione.commento
+                });
+
+                marker.setStyle(new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: 'marker-icon.png',
+                        scale: 0.1
+                    })
+                }));
+
+                markerLayer.getSource().addFeature(marker);
+            });
+        })
+        .catch(error => console.error('Errore nel caricare le segnalazioni:', error));
 </script>
 </body>
 </html>

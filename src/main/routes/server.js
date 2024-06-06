@@ -1,31 +1,45 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const path = require('path');
-const SegnalazioniController = require('./controllers/segnalazioniController');
-
-// Inizializzazione dell'app Express
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
+const port = 3000;
 
-// Middleware per il parsing del body delle richieste
+// Middleware
 app.use(bodyParser.json());
+app.use(cors());
+app.use(express.static('webapp'));
 
-// Connessione al database MongoDB
-mongoose.connect('mongodb://localhost:27017/segnalazioniDB', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('Error connecting to MongoDB:', err));
+// MongoDB connection
+mongoose.connect('mongodb://localhost:27017/segnalazioni', { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Middleware per servire i file statici dalla cartella public
-app.use(express.static(path.join(__dirname, 'public')));
+const Segnalazione = mongoose.model('Segnalazione', new mongoose.Schema({
+    tipo: String,
+    commento: String,
+    coordinate: {
+        type: [Number],
+        index: '2dsphere'
+    },
+    dataOra: { type: Date, default: Date.now }
+}));
 
-// Definizione delle rotte
-app.post('/api/segnalazioni', SegnalazioniController.create);
-app.get('/api/segnalazioni', SegnalazioniController.getAll);
-app.get('/api/segnalazioni/:id', SegnalazioniController.getById);
-app.post('/api/segnalazioni/:id/commenti', SegnalazioniController.addComment);
+// Rotte API
+app.post('/api/segnalazioni', (req, res) => {
+    const { tipo, commento, coordinate } = req.body;
+    const segnalazione = new Segnalazione({ tipo, commento, coordinate });
+    segnalazione.save((err, segnalazioneSalvata) => {
+        if (err) return res.status(500).send(err);
+        res.status(200).send(segnalazioneSalvata);
+    });
+});
 
-// Avvio del server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.get('/api/segnalazioni', (req, res) => {
+    Segnalazione.find({}, (err, segnalazioni) => {
+        if (err) return res.status(500).send(err);
+        res.status(200).send(segnalazioni);
+    });
+});
+
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`);
 });
