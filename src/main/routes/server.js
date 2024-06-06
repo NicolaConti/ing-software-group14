@@ -1,45 +1,58 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const path = require('path');
+
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
-app.use(express.static('webapp'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/segnalazioni', { useNewUrlParser: true, useUnifiedTopology: true });
+// Connessione al database MongoDB
+mongoose.connect('mongodb://localhost:27017/segnalazioni', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
+// Modello Segnalazione
 const Segnalazione = mongoose.model('Segnalazione', new mongoose.Schema({
     tipo: String,
     commento: String,
-    coordinate: {
-        type: [Number],
-        index: '2dsphere'
-    },
-    dataOra: { type: Date, default: Date.now }
+    coordinate: [Number]
 }));
 
 // Rotte API
-app.post('/api/segnalazioni', (req, res) => {
+app.get('/api/segnalazioni', async (req, res) => {
+    const segnalazioni = await Segnalazione.find();
+    res.json(segnalazioni);
+});
+
+app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
     const segnalazione = new Segnalazione({ tipo, commento, coordinate });
-    segnalazione.save((err, segnalazioneSalvata) => {
-        if (err) return res.status(500).send(err);
-        res.status(200).send(segnalazioneSalvata);
-    });
+    await segnalazione.save();
+    res.json(segnalazione);
 });
 
-app.get('/api/segnalazioni', (req, res) => {
-    Segnalazione.find({}, (err, segnalazioni) => {
-        if (err) return res.status(500).send(err);
-        res.status(200).send(segnalazioni);
-    });
+app.delete('/api/segnalazioni/:id', async (req, res) => {
+    const { id } = req.params;
+    await Segnalazione.findByIdAndDelete(id);
+    res.json({ message: 'Segnalazione eliminata' });
 });
 
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+app.post('/api/segnalazioni/:id/commento', async (req, res) => {
+    const { id } = req.params;
+    const { commento } = req.body;
+    const segnalazione = await Segnalazione.findById(id);
+    segnalazione.commento = commento;
+    await segnalazione.save();
+    res.json(segnalazione);
+});
+
+// Avvio del server
+app.listen(PORT, () => {
+    console.log(`Server in ascolto sulla porta ${PORT}`);
 });

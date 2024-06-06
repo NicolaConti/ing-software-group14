@@ -54,6 +54,7 @@
     <textarea id="nuovoCommento"></textarea>
     <br>
     <button onclick="aggiungiCommento()">Aggiungi Commento</button>
+    <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
     <button onclick="chiudiCommentModal()">Chiudi</button>
 </div>
 
@@ -84,6 +85,8 @@
         source: new ol.source.Vector()
     });
     map.addLayer(markerLayer);
+
+    var selectedMarker = null;
 
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
@@ -127,14 +130,46 @@
     }
 
     function aggiungiCommento() {
-        // Implementazione per aggiungere commento aggiuntivo
+        var nuovoCommento = document.getElementById('nuovoCommento').value;
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}/commento`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ commento: nuovoCommento })
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    selectedMarker.set('commento', data.commento);
+                })
+                .catch(error => console.error('Errore:', error));
+        }
     }
 
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
     }
 
+    function eliminaSegnalazione() {
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}`, {
+                method: 'DELETE'
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    markerLayer.getSource().removeFeature(selectedMarker);
+                    selectedMarker = null;
+                    document.getElementById('commentModal').style.display = 'none';
+                })
+                .catch(error => console.error('Errore:', error));
+        }
+    }
+
     function mostraSegnalazione(marker) {
+        selectedMarker = marker;
         var coordinate = marker.getGeometry().getCoordinates();
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
@@ -171,8 +206,11 @@
                 var marker = new ol.Feature({
                     geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                     tipo: segnalazione.tipo,
-                    commento: segnalazione.commento
+                    commento: segnalazione.commento,
+                    id: segnalazione._id
                 });
+
+                marker.setId(segnalazione._id);
 
                 marker.setStyle(new ol.style.Style({
                     image: new ol.style.Icon({
