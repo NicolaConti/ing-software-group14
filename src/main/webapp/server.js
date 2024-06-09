@@ -1,26 +1,14 @@
-const express = require('express');
 const mongoose = require('mongoose');
+const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
-
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname), {
-    setHeaders: (res, filePath) => {
-        if (path.extname(filePath) === '.js') {
-            res.setHeader('Content-Type', 'text/javascript');
-        }
-    }
-}));
 
 // Connect to MongoDB
 mongoose.connect(url, {
@@ -50,14 +38,22 @@ const regUserSchema = new mongoose.Schema({
 // Define the model for the 'RegUser' collection
 const RegUser = mongoose.model('RegUser', regUserSchema);
 
-// Modello Segnalazione
-const Segnalazione = mongoose.model('Segnalazione', new mongoose.Schema({
-    tipo: String,
-    commento: String,
-    coordinate: [Number]
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve static files from the 'webapp' directory
+app.use(express.static(path.join(__dirname), {
+    // Set headers to force the correct MIME type for .js files
+    setHeaders: (res, filePath) => {
+        if (path.extname(filePath) === '.js') {
+            res.setHeader('Content-Type', 'text/javascript');
+        }
+    }
 }));
 
-// Serve static files
+// Define routes for static HTML pages
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
@@ -176,35 +172,7 @@ app.post('/logout', async (req, res) => {
     });
 });
 
-// Rotte API per Segnalazioni
-app.get('/api/segnalazioni', async (req, res) => {
-    const segnalazioni = await Segnalazione.find();
-    res.json(segnalazioni);
-});
-
-app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
-    const segnalazione = new Segnalazione({ tipo, commento, coordinate });
-    await segnalazione.save();
-    res.json(segnalazione);
-});
-
-app.delete('/api/segnalazioni/:id', async (req, res) => {
-    const { id } = req.params;
-    await Segnalazione.findByIdAndDelete(id);
-    res.json({ message: 'Segnalazione eliminata' });
-});
-
-app.post('/api/segnalazioni/:id/commento', async (req, res) => {
-    const { id } = req.params;
-    const { commento } = req.body;
-    const segnalazione = await Segnalazione.findById(id);
-    segnalazione.commento = commento;
-    await segnalazione.save();
-    res.json(segnalazione);
-});
-
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
