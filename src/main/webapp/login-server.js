@@ -8,6 +8,7 @@ const app = express();
 const port = 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
+let newLogin;
 // Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
@@ -36,6 +37,13 @@ const regUserSchema = new mongoose.Schema({
 // Define the model for the 'RegUser' collection
 const RegUser = mongoose.model('RegUser', regUserSchema);
 
+const LoginHistorySchema = new mongoose.Schema( {
+    username: String,
+    date: String
+}, {collection: 'LoginHistory'});
+
+const LoginHistory = mongoose.model('LoginHistory', LoginHistorySchema);
+
 app.use(cors());
 // Middleware to parse JSON body
 app.use(bodyParser.json());
@@ -55,11 +63,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-app.get('/login', (req, res) => {
-    // Send the login.html file when the root URL is accessed
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
 app.get('/map', (req, res) => {
     // Send the login.html file when the root URL is accessed
     res.sendFile(path.join(__dirname, 'map.html'));
@@ -68,6 +71,11 @@ app.get('/map', (req, res) => {
 app.get('/registrazione', (req, res) => {
     // Send the login.html file when the root URL is accessed
     res.sendFile(path.join(__dirname, 'registrazione.html'));
+});
+
+app.get('/admin-login', (req, res) => {
+    // Send the admin-login.html file
+    res.sendFile(path.join(__dirname, 'admin-login.html'));
 });
 
 app.get('/recovery', (req, res) => {
@@ -92,7 +100,15 @@ app.post('/login', async (req, res) => {
         console.log("Query result:", user);
         if (user) {
             // User found, login successful
-
+            let currentdate = new Date();
+            let dateTime = currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/"
+                + currentdate.getFullYear() + " @ "
+                + currentdate.getHours() + ":"
+                + currentdate.getMinutes() + ":"
+                + currentdate.getSeconds();
+            newLogin = new LoginHistory({username, dateTime});
+            await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
                 console.log("User auth updated successfully (login)");
             }).catch((err) => {

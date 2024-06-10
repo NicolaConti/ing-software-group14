@@ -77,6 +77,11 @@
     </div>
     <button type="submit">Accedi</button>
   </form>
+  <form id="form-admin-login" action="/admin-login" method="get">
+    <div class="admin-login">
+      <button type="submit">Sei amministratore? Accedi da qui</button>
+    </div>
+  </form>
   <form id="form-recovery" action="/recovery" method="get">
     <div class="forgot-password">
       <button type="submit">Hai dimenticato la password?</button>
@@ -99,8 +104,6 @@
     const formData = new FormData(event.target);
     const username = formData.get('username');
     const password = formData.get('password');
-    console.log("username:", username);
-    console.log("password:", password);
 
     // Send login request to server
     const response = await fetch('/login', {
