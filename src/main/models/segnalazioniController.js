@@ -63,3 +63,17 @@ exports.ottieniCommenti = async (req, res) => {
         res.status(500).json({ error: 'Errore durante il recupero dei commenti' });
     }
 };
+
+// Funzione per ottenere i feedback di una segnalazione
+exports.ottieniFeedbacks = async (req, res) => {
+    try {
+        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        if (!segnalazione) {
+            return res.status(404).json({ error: 'Segnalazione non trovata' });
+        }
+        res.json(segnalazione.feedbacks);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore durante il recupero dei feedback' });
+    }
+};

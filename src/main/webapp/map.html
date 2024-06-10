@@ -188,7 +188,8 @@
         <p>Tipo: ${tipo}</p>
         <p>Commento: ${commento}</p>
         <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
-    `;
+        <a href="/webapp/visualizza_feedback.html?id=${marker.getId()}">Visualizza feedback</a>
+        `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
         // Pulisci il contenuto del div dei commenti

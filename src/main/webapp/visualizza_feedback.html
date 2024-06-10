@@ -54,8 +54,8 @@
         return params.get('id');
     }
 
-    // Funzione per caricare i dati della segnalazione e dei feedback dal server
-    async function loadSegnalazione() {
+    // Funzione per caricare i dati dei feedback dal server
+    async function loadFeedbacks() {
         const id = getSegnalazioneId();
         if (!id) {
             document.getElementById('title').innerText = 'ID segnalazione non trovato';
@@ -63,31 +63,27 @@
         }
 
         try {
-            // Recupera i dati della segnalazione dal server
-            const response = await fetch(`/api/segnalazioni/${id}`);
-            const segnalazione = await response.json();
+            const response = await fetch(`/api/segnalazioni/${id}/feedbacks`);
+            const feedbacks = await response.json();
 
-            // Imposta il titolo della segnalazione
-            document.getElementById('title').innerText = segnalazione.titolo;
-
-            // Popola i feedback
+            document.getElementById('title').innerText = 'Feedback';
             const feedbackContainer = document.getElementById('feedbacks');
-            feedbackContainer.innerHTML = ''; // Pulisce eventuali feedback precedenti
+            feedbackContainer.innerHTML = '';
 
-            segnalazione.feedbacks.forEach(feedback => {
+            feedbacks.forEach(feedback => {
                 const feedbackItem = document.createElement('div');
                 feedbackItem.className = 'feedback-item';
                 feedbackItem.innerHTML = `<span class="username">${feedback.username}:</span> <span class="comment">${feedback.commento}</span>`;
                 feedbackContainer.appendChild(feedbackItem);
             });
         } catch (error) {
-            console.error('Errore durante il caricamento della segnalazione:', error);
-            document.getElementById('title').innerText = 'Errore durante il caricamento della segnalazione';
+            console.error('Errore durante il caricamento dei feedback:', error);
+            document.getElementById('title').innerText = 'Errore durante il caricamento dei feedback';
         }
     }
 
-    // Carica i dati della segnalazione al caricamento della pagina
-    window.onload = loadSegnalazione;
+    // Carica i feedback al caricamento della pagina
+    window.onload = loadFeedbacks;
 </script>
 </body>
 </html>

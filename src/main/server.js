@@ -211,6 +211,8 @@ app.post('/api/segnalazioni/:idSegnalazione/commento', segnalazioniController.ag
 
 // Route to get comments of a report
 app.get('/api/segnalazioni/:idSegnalazione/commenti', segnalazioniController.ottieniCommenti);
+app.get('/api/segnalazioni/:idSegnalazione/feedbacks', segnalazioniController.ottieniFeedbacks);
+
 
 
 // Start the server
