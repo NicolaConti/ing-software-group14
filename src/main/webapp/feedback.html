@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: green;
+        }
+        .container {
+            width: 80%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .feedback-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .username {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .comment {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="title" class="title">Loading...</div>
+    <div id="feedbacks">
+        <!-- I feedback saranno inseriti qui -->
+    </div>
+</div>
+<script>
+    // Funzione per ottenere l'ID della segnalazione dai parametri della URL
+    function getSegnalazioneId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+
+    // Funzione per caricare i dati della segnalazione e dei feedback dal server
+    async function loadSegnalazione() {
+        const id = getSegnalazioneId();
+        if (!id) {
+            document.getElementById('title').innerText = 'ID segnalazione non trovato';
+            return;
+        }
+
+        try {
+            // Recupera i dati della segnalazione dal server
+            const response = await fetch(`/api/segnalazioni/${id}`);
+            const segnalazione = await response.json();
+
+            // Imposta il titolo della segnalazione
+            document.getElementById('title').innerText = segnalazione.titolo;
+
+            // Popola i feedback
+            const feedbackContainer = document.getElementById('feedbacks');
+            feedbackContainer.innerHTML = ''; // Pulisce eventuali feedback precedenti
+
+            segnalazione.feedbacks.forEach(feedback => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'feedback-item';
+                feedbackItem.innerHTML = `<span class="username">${feedback.username}:</span> <span class="comment">${feedback.commento}</span>`;
+                feedbackContainer.appendChild(feedbackItem);
+            });
+        } catch (error) {
+            console.error('Errore durante il caricamento della segnalazione:', error);
+            document.getElementById('title').innerText = 'Errore durante il caricamento della segnalazione';
+        }
+    }
+
+    // Carica i dati della segnalazione al caricamento della pagina
+    window.onload = loadSegnalazione;
+</script>
+</body>
+</html>

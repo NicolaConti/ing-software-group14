@@ -59,23 +59,23 @@ const Segnalazione = mongoose.model('Segnalazione', new mongoose.Schema({
 
 // Serve static files
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, './webapp/login.html'));
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, './webapp/login.html'));
 });
 
 app.get('/map', (req, res) => {
-    res.sendFile(path.join(__dirname, 'map.html'));
+    res.sendFile(path.join(__dirname, './webapp/map.html'));
 });
 
 app.get('/registrazione', (req, res) => {
-    res.sendFile(path.join(__dirname, 'registrazione.html'));
+    res.sendFile(path.join(__dirname, './webapp/registrazione.html'));
 });
 
 app.get('/recovery', (req, res) => {
-    res.sendFile(path.join(__dirname, 'recovery.html'));
+    res.sendFile(path.join(__dirname, './webapp/recovery.html'));
 });
 
 // Utility functions to validate email and password formats
@@ -121,10 +121,10 @@ app.post('/SignIn', async (req, res) => {
 
         // Log the registration
         const registrationData = `${new Date().toISOString()} - REGISTER - Username: ${username}, Email: ${email}\n`;
-        fs.appendFileSync('registered_users.txt', registrationData);
+        fs.appendFileSync('./webapp/registered_users.txt', registrationData);
 
         // Send success response
-        res.status(200).json({ redirect: 'map.html' });
+        res.status(200).json({ redirect: './webapp/map.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });
@@ -144,7 +144,7 @@ app.post('/login', async (req, res) => {
             await RegUser.updateOne({ username: user.username }, { $set: { auth: "1" } }).exec();
             console.log("User auth updated successfully (login)");
 
-            res.status(200).json({ message: 'Login successful', redirect: 'map.html' });
+            res.status(200).json({ message: 'Login successful', redirect: './webapp/map.html' });
         } else {
             res.status(401).json({ message: 'Invalid username or password' });
         }
@@ -169,7 +169,7 @@ app.get('/check-username', async (req, res) => {
 // Route for user logout
 app.post('/logout', async (req, res) => {
     await RegUser.updateOne({ username: user.username }, { $set: { auth: "0" } }).exec().then(() => {
-        res.redirect('/login.html');
+        res.redirect('./webapp/login.html');
         console.log("Logout Successful");
     }).catch((err) => {
         console.error("Error updating user auth (logout): ", err);
@@ -203,6 +203,15 @@ app.post('/api/segnalazioni/:id/commento', async (req, res) => {
     await segnalazione.save();
     res.json(segnalazione);
 });
+
+const segnalazioniController = require('./models/segnalazioniController');
+
+// Route to add a comment to a report
+app.post('/api/segnalazioni/:idSegnalazione/commento', segnalazioniController.aggiungiCommento);
+
+// Route to get comments of a report
+app.get('/api/segnalazioni/:idSegnalazione/commenti', segnalazioniController.ottieniCommenti);
+
 
 // Start the server
 app.listen(PORT, () => {

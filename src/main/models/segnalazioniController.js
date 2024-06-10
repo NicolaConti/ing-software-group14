@@ -1,5 +1,4 @@
-
-const Segnalazione = require('../models/segnalazione');
+const Segnalazione = require('./segnalazione');
 
 // Funzione per creare una nuova segnalazione
 exports.creaSegnalazione = async (req, res) => {
@@ -38,7 +37,7 @@ exports.aggiungiCommento = async (req, res) => {
         }
 
         // Aggiungere il commento alla segnalazione
-        segnalazione.commenti.push(req.body.commento);
+        segnalazione.feedbacks.push(req.body.commento);
 
         // Salvare la segnalazione aggiornata nel database
         const segnalazioneAggiornata = await segnalazione.save();
@@ -48,5 +47,19 @@ exports.aggiungiCommento = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante l\'aggiunta del commento' });
+    }
+};
+
+// Funzione per ottenere i commenti di una segnalazione
+exports.ottieniCommenti = async (req, res) => {
+    try {
+        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        if (!segnalazione) {
+            return res.status(404).json({ error: 'Segnalazione non trovata' });
+        }
+        res.json(segnalazione.feedbacks);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore durante il recupero dei commenti' });
     }
 };
