@@ -46,6 +46,7 @@
         button {
             width: 100%;
             padding: 10px;
+            margin: 10px;
             background-color: #007bff;
             color: #fff;
             border: none;
@@ -55,20 +56,6 @@
 
         button:hover {
             background-color: #0056b3;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -86,9 +73,9 @@
         </div>
         <button type="submit">Invia Email di Recupero</button>
     </form>
-    <div class="back-link">
-        <a href="../webapp/login.html">Torna al login</a>
-    </div>
+    <form id="back-link" action="/login" method="get">
+        <button class="btn" type="submit">Torna al login utente</button>
+    </form>
 </div>
 </body>
 </html>

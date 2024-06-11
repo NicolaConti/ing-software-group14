@@ -74,6 +74,9 @@
     <form id="form-recovery" action="/recovery" method="get">
         <button class="btn" type="submit">Hai dimenticato la password?</button>
     </form>
+    <form id="form-user-login" action="/login" method="get">
+        <button class="btn" type="submit">Torna al login utente</button>
+    </form>
 </div>
 <script>
     document.getElementById('admin-login-form').addEventListener('submit', async (event) => {
@@ -92,14 +95,14 @@
         });
 
         if (response.ok) {
+            const data = await response.json();
             alert('Login successful');
-            window.location.href="admin-dashboard.html";
+            window.location.href = data.redirect;
             //manda a dashboard admin
         } else {
             alert('Login failed: ' + await response.text());
         }
     });
 </script>
-<script src="../webapp/admin.js"></script>
 </body>
 </html>

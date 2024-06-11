@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const segnalazioneSchema = new mongoose.Schema({
-    _id: Number,
+    id: Number,
     tipo: String,
     commento: String,
     data: Date,
@@ -10,8 +10,8 @@ const segnalazioneSchema = new mongoose.Schema({
         username: String,
         commento: String
     }]
-});
+}, {collection: 'Segnalazioni'});
 
-const Segnalazione = mongoose.model('Segnalazione', segnalazioneSchema);
+const Segnalazione = mongoose.model('Segnalazioni', segnalazioneSchema);
 
 module.exports = Segnalazione;

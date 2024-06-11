@@ -1,4 +1,4 @@
-const Segnalazione = require('./segnalazione');
+const Segnalazione = require('./Segnalazione');
 const Counter = require('./counter');
 
 async function getNextSequence(name) {
