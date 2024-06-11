@@ -105,11 +105,98 @@
             <input type="password" id="password" name="password" required>
             <span id="error_password" class="error_info"></span>
         </div>
-        <button type="submit" onclick="checkCampi(event)">Registrati</button>
+        <button type="submit">Registrati</button>
     </form>
     <div class="back-link">
-        <a href="../webapp/login.html">Torna al login</a>
+        <a href="login.html">Torna al login</a>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('#register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            makeQuery();
+        });
+    });
+
+    function checkCampi(event) {
+        event.preventDefault(); // Prevent form submission
+        valid.form = document.getElementById('register-form');
+        valid.error_username = document.getElementById('error_username');
+        valid.error_email = document.getElementById('error_email');
+        valid.error_password = document.getElementById('error_password');
+
+        valid.error_username.innerText = '';
+        valid.error_email.innerText = '';
+        valid.error_password.innerText = '';
+        valid.hasError = false;
+
+        const username = valid.form.username.value;
+        const email = valid.form.email.value;
+        const password = valid.form.password.value;
+
+        if (username.length < 3) {
+            valid.error_username.innerText = 'Username must be at least 3 characters';
+            valid.hasError = true;
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            valid.error_email.innerText = 'Please enter a valid email';
+            valid.hasError = true;
+        }
+
+        if (password.length < 8) {
+            valid.error_password.innerText = 'Password must be at least 8 characters';
+            valid.hasError = true;
+        }
+
+        if (!valid.hasError) {
+            makeQuery();
+        }
+    }
+
+    function makeQuery() {
+        const xhttp = new XMLHttpRequest();
+        const form = document.getElementById('register-form');
+        const formData = new FormData(form);
+        const data = JSON.stringify(Object.fromEntries(formData.entries()));
+
+        xhttp.open("POST", "/SignIn", true);
+        xhttp.setRequestHeader('Content-Type', 'application/json');
+        xhttp.send(data);
+
+        xhttp.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE) {
+                if (this.status === 200) {
+                    const response = JSON.parse(this.responseText);
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                    } else {
+                        console.log("Registrazione avvenuta con successo, ma nessun redirect specificato.");
+                    }
+                } else {
+                    console.log("Registrazione fallita");
+                    console.log("Risposta: " + this.responseText);
+                }
+            }
+        };
+    }
+
+    function resetForm() {
+        valid.form.reset();
+        valid.error_username.innerText = '';
+        valid.error_email.innerText = '';
+        valid.error_password.innerText = '';
+    }
+
+    const valid = {
+        form: null,
+        error_username: null,
+        error_email: null,
+        error_password: null,
+        hasError: false
+    };
+</script>
 </body>
 </html>

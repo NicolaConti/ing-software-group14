@@ -26,6 +26,8 @@
         #commentModal {
             top: 150px;
             left: 150px;
+            max-height: 400px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -49,6 +51,7 @@
 
 <div id="commentModal">
     <div id="dettagliSegnalazione"></div>
+    <div id="commenti"></div>
     <br>
     <label for="nuovoCommento">Aggiungi un commento:</label>
     <textarea id="nuovoCommento"></textarea>
@@ -62,6 +65,194 @@
     <button type="submit">Logout</button>
 </form>
 
-<script src="map.js"></script>
+<script>
+    var map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([11.12, 46.07]),
+            zoom: 13
+        })
+    });
+
+    var overlay = new ol.Overlay({
+        element: document.getElementById('overlay')
+    });
+    map.addOverlay(overlay);
+
+    var markerLayer = new ol.layer.Vector({
+        source: new ol.source.Vector()
+    });
+    map.addLayer(markerLayer);
+
+    var selectedMarker = null;
+
+    function aggiungiSegnalazione() {
+        var tipo = document.getElementById('tipo').value;
+        var commento = document.getElementById('commento').value;
+        var coordinate = overlay.getPosition();
+
+        var marker = new ol.Feature({
+            geometry: new ol.geom.Point(coordinate),
+            tipo: tipo,
+            commento: commento
+        });
+
+        marker.setStyle(new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'marker-icon.png',
+                scale: 0.1
+            })
+        }));
+
+        markerLayer.getSource().addFeature(marker);
+
+        document.getElementById('modal').style.display = 'none';
+
+        fetch('/api/segnalazioni', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: tipo,
+                commento: commento,
+                coordinate: ol.proj.toLonLat(coordinate)
+            })
+        }).then(response => response.json())
+            .then(data => {
+                marker.setId(data._id);
+                console.log(data);
+            })
+            .catch(error => console.error('Errore:', error));
+    }
+
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function aggiungiCommento() {
+        var nuovoCommento = document.getElementById('nuovoCommento').value;
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}/commento`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ commento: nuovoCommento })
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    var commentiDiv = document.getElementById('commenti');
+                    var commentElement = document.createElement('p');
+                    commentElement.textContent = nuovoCommento;
+                    commentiDiv.appendChild(commentElement);
+                    document.getElementById('nuovoCommento').value = '';
+                })
+                .catch(error => console.error('Errore:', error));
+        }
+    }
+
+    function chiudiCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+    }
+
+    function eliminaSegnalazione() {
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}`, {
+                method: 'DELETE'
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    markerLayer.getSource().removeFeature(selectedMarker);
+                    selectedMarker = null;
+                    document.getElementById('commentModal').style.display = 'none';
+                })
+                .catch(error => console.error('Errore:', error));
+        }
+    }
+
+    function mostraSegnalazione(marker) {
+        selectedMarker = marker;
+        var coordinate = marker.getGeometry().getCoordinates();
+        var tipo = marker.get('tipo');
+        var commento = marker.get('commento');
+
+        var dettagli = `
+        <p>Tipo: ${tipo}</p>
+        <p>Commento: ${commento}</p>
+        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
+        <a href="/webapp/visualizza_feedback.html?id=${marker.getId()}">Visualizza feedback</a>
+        `;
+        document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
+
+        // Pulisci il contenuto del div dei commenti
+        document.getElementById('commenti').innerHTML = '';
+
+        // Fetch e visualizza i commenti della segnalazione
+        fetch(`/api/segnalazioni/${marker.getId()}/commenti`)
+            .then(response => response.json())
+            .then(commenti => {
+                var commentiDiv = document.getElementById('commenti');
+                commenti.forEach(commento => {
+                    var commentElement = document.createElement('p');
+                    commentElement.textContent = commento;
+                    commentiDiv.appendChild(commentElement);
+                });
+            })
+            .catch(error => console.error('Errore:', error));
+
+        document.getElementById('commentModal').style.display = 'block';
+    }
+
+    // Evento per aggiungere un nuovo marker
+    map.on('singleclick', function(event) {
+        var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
+        });
+
+        if (feature) {
+            mostraSegnalazione(feature);
+        } else {
+            var coordinate = event.coordinate;
+            document.getElementById('modal').style.display = 'block';
+            overlay.setPosition(coordinate);
+        }
+    });
+
+    // Carica le segnalazioni dal server
+    fetch('/api/segnalazioni')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(segnalazione => {
+                var marker = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
+                    tipo: segnalazione.tipo,
+                    commento: segnalazione.commento,
+                    id: segnalazione._id
+                });
+
+                marker.setId(segnalazione._id);
+
+                marker.setStyle(new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: 'marker-icon.png',
+                        scale: 0.1
+                    })
+                }));
+
+                markerLayer.getSource().addFeature(marker);
+            });
+        })
+
+
+        .catch(error => console.error('Errore:', error));
+</script>
 </body>
 </html>

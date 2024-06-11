@@ -28,8 +28,8 @@ Verificare che tutte le dependencies relative a node.js siano state installate c
 
 Nel terminale, eseguire:
 ```
-cd src/main/webapp
-node login-server.js
+cd src/main
+node server.js
 ```
 
 Recarsi sul browser all'indirizzo http://localhost:3000 dove comparirà la pagina di login.

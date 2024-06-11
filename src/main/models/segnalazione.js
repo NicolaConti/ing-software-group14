@@ -15,13 +15,20 @@ const segnalazioneSchema = new mongoose.Schema({
         type: [Number], // [longitudine, latitudine]
         required: true
     },
-    commenti: {
-        type: [String],
+    feedbacks: {
+        type: [{
+            username: String,
+            commento: String,
+            data: {
+                type: Date,
+                default: Date.now
+            }
+        }],
         default: []
     }
 });
 
-// Creazione del modello Segnalazione utilizzando lo schema definito
-const Segnalazione = mongoose.model('Segnalazione', segnalazioneSchema);
+// Controlla se il modello è già stato definito, altrimenti lo definisce
+const Segnalazione = mongoose.models.Segnalazione || mongoose.model('Segnalazione', segnalazioneSchema);
 
 module.exports = Segnalazione;

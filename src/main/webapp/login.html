@@ -148,13 +148,13 @@
 
     if (response.ok) {
       alert('Login successful');
-      window.location.href="map.html";
+      window.location.href="./webapp/map.html";
       //manda a map.html
     } else {
       alert('Login failed: ' + await response.text());
     }
   });
 </script>
-<script src="../webapp/login-server.js"></script>
+<script src="../server.js"></script>
 </body>
 </html>
