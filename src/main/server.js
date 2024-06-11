@@ -220,34 +220,5 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// Variabile per tenere traccia degli ID delle segnalazioni
-let id = 0;
 
-// Funzione per generare un ID univoco per le segnalazioni
-function generateID() {
-    id++;
-    return id;
-}
-
-// Route per aggiungere una nuova segnalazione
-app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
-
-    // Genera un nuovo ID univoco per la segnalazione
-    const nuovaSegnalazione = new Segnalazione({
-        id: generateID(),
-        tipo,
-        commento,
-        coordinate
-    });
-
-    // Salva la segnalazione nel database
-    try {
-        await nuovaSegnalazione.save();
-        res.status(201).json(nuovaSegnalazione);
-    } catch (error) {
-        console.error("Errore durante l'aggiunta della segnalazione:", error);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
 
