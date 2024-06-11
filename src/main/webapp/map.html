@@ -91,6 +91,10 @@
 
     var selectedMarker = null;
 
+    function getMarkerScale(zoom) {
+        return 0.05 + (zoom - 13) * 0.005; // Scala iniziale ridotta
+    }
+
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
@@ -102,13 +106,15 @@
             commento: commento
         });
 
-        marker.setStyle(new ol.style.Style({
+        var zoom = map.getView().getZoom();
+        var iconStyle = new ol.style.Style({
             image: new ol.style.Icon({
                 src: 'marker-icon.png',
-                scale: 0.1
+                scale: getMarkerScale(zoom)
             })
-        }));
+        });
 
+        marker.setStyle(iconStyle);
         markerLayer.getSource().addFeature(marker);
 
         document.getElementById('modal').style.display = 'none';
@@ -240,19 +246,29 @@
 
                 marker.setId(segnalazione._id);
 
-                marker.setStyle(new ol.style.Style({
+                var zoom = map.getView().getZoom();
+                var iconStyle = new ol.style.Style({
                     image: new ol.style.Icon({
                         src: 'marker-icon.png',
-                        scale: 0.1
+                        scale: getMarkerScale(zoom)
                     })
-                }));
+                });
 
+                marker.setStyle(iconStyle);
                 markerLayer.getSource().addFeature(marker);
             });
         })
-
-
         .catch(error => console.error('Errore:', error));
+
+    // Aggiorna la scala dei marker in base allo zoom della mappa
+    map.getView().on('change:resolution', function() {
+        var zoom = map.getView().getZoom();
+        markerLayer.getSource().getFeatures().forEach(function(feature) {
+            var iconStyle = feature.getStyle();
+            iconStyle.getImage().setScale(getMarkerScale(zoom));
+            feature.setStyle(iconStyle);
+        });
+    });
 </script>
 </body>
 </html>
