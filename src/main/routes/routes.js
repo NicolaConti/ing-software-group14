@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const segnalazioneController = require('./segnalazioneController');
+const segnalazioneController = require('../models/segnalazioniController');
 
 app.use('/', routes);
 // Rotte per le segnalazioni
