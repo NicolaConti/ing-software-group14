@@ -32,10 +32,14 @@ cd src/main
 node server.js
 ```
 
-Recarsi sul browser all'indirizzo http://localhost:3000 dove comparirà la pagina di login.
+Recarsi sul browser all'indirizzo https://ing-software-group14.onrender.com dove comparirà la pagina di login.
 
 Le credenziali di testing sono:
 ```
 username: Utente1
 password: passUtente1
+```
+```
+username: Admin1
+password: passAdmin1
 ```
