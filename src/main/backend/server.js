@@ -413,7 +413,7 @@ app.post('/close-segnalazione', async (req, res) => {
 
         if (user) {
             // User found
-            RegUser.deleteOne({Id: user.Id} ).exec().then(() => {
+            Segnalazione.deleteOne({Id: user.Id} ).exec().then(() => {
                 console.log("Segnalazione close updated successfully");
             }).catch((err) => {
                 console.error("Error closing segnalazione: ", err);
