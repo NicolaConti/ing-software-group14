@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "### Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
   "main": "server.js",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -14,7 +13,8 @@
     "express": "^4.19.2",
     "express-flash": "^0.0.2",
     "mongodb": "^6.6.2",
-    "mongoose": "^8.4.1"
+    "mongoose": "^8.4.1",
+    "omit-undefined": "^1.0.1"
   },
   "devDependencies": {
     "@types/webpack-env": "^1.18.5"
