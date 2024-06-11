@@ -84,7 +84,7 @@ function aggiungiSegnalazione() {
 
 function getMarkerScale(zoom) {
     // Calcola la scala dell'icona in base al livello di zoom
-    return 0.1 + (zoom - 13) * 0.01; // Regola i valori in base alle tue esigenze
+    return 0.05 + (zoom - 13) * 0.005; // Scala iniziale ridotta
 }
 
 map.getView().on('change:resolution', function() {
@@ -114,8 +114,6 @@ function aggiungiMarker(segnalazione) {
     marker.setStyle(iconStyle);
     markerLayer.getSource().addFeature(marker);
 }
-
-// Altre funzioni per interazioni utente, se necessario
 
 // Carica le segnalazioni dal server
 fetch('/api/segnalazioni')
