@@ -425,7 +425,7 @@ app.post('/close-segnalazione', async (req, res) => {
             res.status(401).send('Invalid ID');
         }
     } catch (err) {
-        console.error("Error during login:", err);
+        console.error("Error during close-segnalazione:", err);
         res.status(500).send('Internal server error');
     }
 });
