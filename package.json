@@ -4,7 +4,7 @@
   "description": "### Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
   "main": "server.js",
   "scripts": {
-    "start": "cd backend && node server.js"
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
