@@ -1,17 +1,18 @@
 const mongoose = require('mongoose');
 
+const feedbackSchema = new mongoose.Schema({
+    username: String,
+    commento: String,
+    data: { type: Date, default: Date.now }
+});
+
 const segnalazioneSchema = new mongoose.Schema({
     _id: Number,
     tipo: String,
     commento: String,
-    data: Date,
-    coordinate: [Number],
-    feedbacks: [{
-        username: String,
-        commento: String
-    }]
+    data: { type: Date, default: Date.now },
+    coordinate: String,
+    feedbacks: [feedbackSchema]
 });
 
-const Segnalazione = mongoose.model('Segnalazione', segnalazioneSchema);
-
-module.exports = Segnalazione;
+module.exports = mongoose.model('Segnalazione', segnalazioneSchema);

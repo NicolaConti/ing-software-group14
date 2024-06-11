@@ -4,15 +4,15 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const { getNextId } = require('./models/counter');
+const Segnalazione = require('./models/segnalazione');
+const segnalazioneController = require('./models/segnalazioniController');
+const routes = require('./routes/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
-
-// Importa il modulo counter.js
-const Counter = require('./models/counter');
-const { getNextId } = require('./models/counter');
 
 // Middleware
 app.use(cors());
@@ -54,20 +54,6 @@ const regUserSchema = new mongoose.Schema({
 // Define the model for the 'RegUser' collection
 const RegUser = mongoose.model('RegUser', regUserSchema);
 
-// Modello Segnalazione
-const segnalazioneSchema = new mongoose.Schema({
-    id: Number,
-    tipo: String,
-    commento: String,
-    coordinate: [Number],
-    feedbacks: [{
-        username: String,
-        commento: String
-    }]
-});
-
-const Segnalazione = mongoose.model('Segnalazione', segnalazioneSchema);
-
 // Serve static files
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './webapp/login.html'));
@@ -88,17 +74,6 @@ app.get('/registrazione', (req, res) => {
 app.get('/recovery', (req, res) => {
     res.sendFile(path.join(__dirname, './webapp/recovery.html'));
 });
-
-// Utility functions to validate email and password formats
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-}
-
-function validatePassword(password) {
-    const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    return re.test(String(password));
-}
 
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
@@ -165,78 +140,15 @@ app.post('/login', async (req, res) => {
 });
 
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
-app.get('/api/segnalazioni/:id', async (req, res) => {
-    try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-        res.status(200).json(segnalazione);
-    } catch (err) {
-        console.error("Errore durante il recupero della segnalazione:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
-
-app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-        res.status(200).json(segnalazione.feedbacks);
-    } catch (err) {
-        console.error("Errore durante il recupero dei feedback:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
-
-app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    const { commento } = req.body;
-    const username = user;  // Assuming 'user' is the currently logged-in user
-
-    try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-
-        segnalazione.feedbacks.push({ username, commento });
-        await segnalazione.save();
-
-        res.status(200).json({ message: 'Feedback aggiunto con successo' });
-    } catch (err) {
-        console.error("Errore durante l'aggiunta del feedback:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
-
-// Route to create a new segnalazione
-app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
-
-    try {
-        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
-
-        const newSegnalazione = new Segnalazione({
-            id: newId, // Usa il nuovo ID generato
-            tipo,
-            commento,
-            coordinate,
-            feedbacks: []
-        });
-
-        await newSegnalazione.save();
-        res.status(201).json(newSegnalazione);
-    } catch (err) {
-        console.error("Errore durante la creazione della segnalazione:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
+app.get('/api/segnalazioni/:id', segnalazioneController.ottieniCommenti);
+app.get('/api/segnalazioni/:id/feedbacks', segnalazioneController.ottieniFeedbacks);
+app.post('/api/segnalazioni/:id/feedbacks', segnalazioneController.aggiungiCommento);
+app.post('/api/segnalazioni', segnalazioneController.creaSegnalazione);
+app.delete('/api/segnalazioni/:idSegnalazione', segnalazioneController.eliminaSegnalazione);
 
 // Route per il logout
 app.post('/logout', async (req, res) => {
-    await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
+    await RegUser.updateOne({ username: user.username }, { $set: { auth: "0" } }).exec().then(() => {
         res.redirect('/login.html');
         console.log("Logout Successful");
         console.log("User auth updated successfully (logout)");
@@ -245,11 +157,7 @@ app.post('/logout', async (req, res) => {
     });
 });
 
-// Funzione per avviare il server
-async function startServer() {
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
-}
-
-startServer();
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});

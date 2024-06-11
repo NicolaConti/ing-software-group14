@@ -208,7 +208,7 @@
                 var commentiDiv = document.getElementById('commenti');
                 commenti.forEach(commento => {
                     var commentElement = document.createElement('p');
-                    commentElement.textContent = commento;
+                    commentElement.textContent = commento.commento; // Assumendo che l'API restituisca un oggetto con una proprietà "commento"
                     commentiDiv.appendChild(commentElement);
                 });
             })
