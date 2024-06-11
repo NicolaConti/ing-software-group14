@@ -1,15 +1,15 @@
 const express = require('express');
-const app = express();
-const routes = require('./routes/routes');  // Importa le rotte
-const mongoose = require('mongoose');
+const router = express.Router();
+const segnalazioneController = require('./segnalazioneController');
 
-// Altri middleware e configurazioni
+app.use('/', routes);
+// Rotte per le segnalazioni
+router.post('/segnalazioni', segnalazioneController.creaSegnalazione);
+router.post('/segnalazioni/:idSegnalazione/commento', segnalazioneController.aggiungiCommento);
+router.get('/segnalazioni/:idSegnalazione/commenti', segnalazioneController.ottieniCommenti);
+router.delete('/segnalazioni/:idSegnalazione', segnalazioneController.eliminaSegnalazione);
 
-app.use('/', routes);  // Utilizza le rotte definite in routes.js
+// Assicurati di aver incluso questo router nel tuo file server principale
+// app.use('/api', router);
 
-// Configurazione del server e avvio
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+module.exports = router;

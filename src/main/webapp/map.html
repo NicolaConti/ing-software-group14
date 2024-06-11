@@ -151,7 +151,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ commento: nuovoCommento })
+                body: JSON.stringify({ commento: nuovoCommento, username: 'user' }) // Assumi che 'user' sia il nome utente corrente
             }).then(response => response.json())
                 .then(data => {
                     console.log(data);
@@ -195,7 +195,6 @@
         <p>Tipo: ${tipo}</p>
         <p>Commento: ${commento}</p>
         <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
-        <a href="/webapp/visualizza_feedback.html?id=${marker.getId()}">Visualizza feedback</a>
         `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 

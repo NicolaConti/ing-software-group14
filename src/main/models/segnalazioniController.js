@@ -1,23 +1,30 @@
 const Segnalazione = require('./segnalazione');
+const Counter = require('./counter');
 
-// Funzione per creare una nuova segnalazione
+async function getNextSequence(name) {
+    const counter = await Counter.findByIdAndUpdate(
+        { _id: name },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return counter.seq;
+}
+
 exports.creaSegnalazione = async (req, res) => {
     try {
-        // Estrarre i dati dalla richiesta
         const { tipo, commento, data, coordinate } = req.body;
+        const nextId = await getNextSequence('segnalazioneid');
 
-        // Creare una nuova istanza di Segnalazione
         const nuovaSegnalazione = new Segnalazione({
+            _id: nextId,
             tipo: tipo,
             commento: commento,
             data: data,
             coordinate: coordinate
         });
 
-        // Salvare la nuova segnalazione nel database
         const segnalazioneSalvata = await nuovaSegnalazione.save();
 
-        // Rispondere con la nuova segnalazione creata
         res.status(201).json(segnalazioneSalvata);
     } catch (error) {
         console.error(error);
@@ -25,30 +32,32 @@ exports.creaSegnalazione = async (req, res) => {
     }
 };
 
+
 // Funzione per aggiungere un commento a una segnalazione esistente
 exports.aggiungiCommento = async (req, res) => {
     try {
-        // Trovare la segnalazione tramite l'id nel parametro della richiesta
         const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
 
-        // Se la segnalazione non è stata trovata, restituire un errore 404
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
         }
 
-        // Aggiungere il commento alla segnalazione
-        segnalazione.feedbacks.push(req.body.commento);
+        const nuovoCommento = {
+            username: req.body.username,
+            commento: req.body.commento
+        };
 
-        // Salvare la segnalazione aggiornata nel database
+        segnalazione.feedbacks.push(nuovoCommento);
+
         const segnalazioneAggiornata = await segnalazione.save();
 
-        // Rispondere con la segnalazione aggiornata
         res.json(segnalazioneAggiornata);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante l\'aggiunta del commento' });
     }
 };
+
 
 // Funzione per ottenere i commenti di una segnalazione
 exports.ottieniCommenti = async (req, res) => {
