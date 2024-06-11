@@ -191,6 +191,13 @@
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
 
+        var dettagli = `
+        <p>Tipo: ${tipo}</p>
+        <p>Commento: ${commento}</p>
+        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
+        `;
+        document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
+
         // Pulisci il contenuto del div dei commenti
         document.getElementById('commenti').innerHTML = '';
 
