@@ -1,4 +1,232 @@
-FORMAT: 1A
-HOST: https://polls.apiblueprint.org/
-
 # ing-software-group14
+
+FORMAT: 1A
+
+HOST: http://yourapi.com
+
+# Group Default
+## Root [/]
+### Get Root Page [GET]
++ Response 200 (text/html)
+    + Body
+            ... HTML content for login.html ...
+
+# Group User
+## User Login [/login]
+### Login [POST]
++ Request (application/json)
+    + Attributes
+        - username: `string` (required) - The username of the user.
+        - password: `string` (required) - The password of the user.
++ Response 200 (application/json)
+    + Body
+            {
+                "message": "Login successful"
+            }
++ Response 401 (application/json)
+    + Body
+            {
+                "error": "Invalid username or password"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## User Logout [/logout]
+### Logout [POST]
++ Request (application/json)
++ Response 302 (text/html)
+    + Headers
+        Location: /login.html
+    + Body
+            {
+                "message": "Logout successful"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## User Registration Page [/registrazione]
+### Get Registration Page [GET]
++ Response 200 (text/html)
+    + Body
+            ... HTML content ...
+
+## User Password Recovery Page [/recovery]
+### Get Recovery Page [GET]
++ Response 200 (text/html)
+    + Body
+            ... HTML content ...
+
+# Group Admin
+## Admin Login Page[/admin]
+### Get Admin Login Page [GET]
++ Response 200 (text/html)
+    + Body
+            ... HTML content ...
+
+## Admin Login [/admin-login]
+### Login [POST]
++ Request (application/json)
+    + Attributes
+        - username: `string` (required) - The username of the admin.
+        - password: `string` (required) - The password of the admin.
++ Response 200 (application/json)
+    + Body
+            {
+                "message": "Login successful"
+            }
++ Response 401 (application/json)
+    + Body
+            {
+                "error": "Invalid username or password"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Admin Logout [/logout]
+### Logout [POST]
++ Request (application/json)
++ Response 302 (text/html)
+    + Headers
+        Location: /login.html
+    + Body
+            {
+                "message": "Logout successful"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Fetch Login History [/login-history]
+### Get Login History [GET]
++ Response 200 (application/json)
+    + Body
+            [
+                "username, dateTime",
+                ...
+            ]
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Fetch Registered Users [/fetch-users]
+### Get Registered Users [GET]
++ Response 200 (application/json)
+    + Body
+            [
+                "username",
+                ...
+            ]
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Suspend User [/suspend-user]
+### Suspend User [POST]
++ Request (application/json)
+    + Attributes
+        - username: `string` (required) - The username of the user to be suspended.
++ Response 200 (application/json)
+    + Body
+            {
+                "message": "Suspend successful"
+            }
++ Response 400 (application/json)
+    + Body
+            {
+                "error": "User is already suspended"
+            }
++ Response 401 (application/json)
+    + Body
+            {
+                "error": "Invalid username"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Fetch Suspended Users [/fetch-suspended]
+### Get Suspended Users [GET]
++ Response 200 (application/json)
+    + Body
+            [
+                "username",
+                ...
+            ]
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Unsuspend User [/unsuspend-user]
+### Unsuspend User [POST]
++ Request (application/json)
+    + Attributes
+        - username: `string` (required) - The username of the user to be unsuspended.
++ Response 200 (application/json)
+    + Body
+            {
+                "message": "Unsuspend successful"
+            }
++ Response 401 (application/json)
+    + Body
+            {
+                "error": "Invalid username"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Fetch Segnalazioni [/fetch-segnalazioni]
+### Get Segnalazioni [GET]
++ Response 200 (application/json)
+    + Body
+            [
+                "Id, tipo, commento",
+                ...
+            ]
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
+
+## Close Segnalazione [/close-segnalazione]
+### Close Segnalazione [POST]
++ Request (application/json)
+    + Attributes
+        - id: `string` (required) - The ID of the segnalazione to be closed.
++ Response 200 (application/json)
+    + Body
+            {
+                "message": "Closing segnalazione successful"
+            }
++ Response 401 (application/json)
+    + Body
+            {
+                "error": "Invalid ID"
+            }
++ Response 500 (application/json)
+    + Body
+            {
+                "error": "Internal server error"
+            }
