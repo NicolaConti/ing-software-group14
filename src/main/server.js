@@ -219,3 +219,24 @@ app.get('/api/segnalazioni/:idSegnalazione/feedbacks', segnalazioniController.ot
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+let id = 0;
+
+function generateID() {
+    id++;
+    return id;
+}
+
+app.post('/api/segnalazioni', async (req, res) => {
+    const { tipo, commento, coordinate } = req.body;
+    const segnalazione = new Segnalazione({
+        id: generateID(), // Aggiungi un ID generato
+        tipo,
+        commento,
+        coordinate
+    });
+    await segnalazione.save();
+    res.json(segnalazione);
+});
+
+// Ogni segnalazione avrà un ID univoco generato da generateID()
