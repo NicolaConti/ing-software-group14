@@ -1,5 +1,3 @@
-// map.js
-
 var longitude = 11.12;
 var latitude = 46.07;
 var coordinateCliccate;
@@ -27,6 +25,11 @@ var overlay = new ol.Overlay({
 
 map.addOverlay(overlay);
 
+var markerLayer = new ol.layer.Vector({
+    source: new ol.source.Vector()
+});
+map.addLayer(markerLayer);
+
 map.on('singleclick', function (event) {
     coordinateCliccate = ol.proj.toLonLat(event.coordinate);
     document.getElementById('modal').style.display = 'block';
@@ -42,6 +45,25 @@ function chiudiModal() {
 function aggiungiSegnalazione() {
     const tipo = document.getElementById('tipo').value;
     const commento = document.getElementById('commento').value;
+    const coordinate = ol.proj.fromLonLat(coordinateCliccate);
+
+    const marker = new ol.Feature({
+        geometry: new ol.geom.Point(coordinate),
+        tipo: tipo,
+        commento: commento
+    });
+
+    const iconStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+            src: 'marker-icon.png',
+            scale: getMarkerScale(map.getView().getZoom())
+        })
+    });
+
+    marker.setStyle(iconStyle);
+    markerLayer.getSource().addFeature(marker);
+
+    document.getElementById('modal').style.display = 'none';
 
     fetch('/api/segnalazioni', {
         method: 'POST',
@@ -51,19 +73,56 @@ function aggiungiSegnalazione() {
         body: JSON.stringify({
             tipo: tipo,
             commento: commento,
-            data: new Date(),
             coordinate: coordinateCliccate
         })
     })
         .then(response => response.json())
         .then(data => {
-            aggiungiMarker(data);
-            chiudiModal();
+            console.log(data);
         });
 }
 
+function getMarkerScale(zoom) {
+    // Calcola la scala dell'icona in base al livello di zoom
+    return 0.1 + (zoom - 13) * 0.01; // Regola i valori in base alle tue esigenze
+}
+
+map.getView().on('change:resolution', function() {
+    const zoom = map.getView().getZoom();
+    markerLayer.getSource().getFeatures().forEach(feature => {
+        const iconStyle = feature.getStyle();
+        iconStyle.getImage().setScale(getMarkerScale(zoom));
+        feature.setStyle(iconStyle);
+    });
+});
+
 function aggiungiMarker(segnalazione) {
-    // Implementazione dei marker sulla mappa
+    const marker = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
+        tipo: segnalazione.tipo,
+        commento: segnalazione.commento,
+        id: segnalazione._id
+    });
+
+    const iconStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+            src: 'marker-icon.png',
+            scale: getMarkerScale(map.getView().getZoom())
+        })
+    });
+
+    marker.setStyle(iconStyle);
+    markerLayer.getSource().addFeature(marker);
 }
 
 // Altre funzioni per interazioni utente, se necessario
+
+// Carica le segnalazioni dal server
+fetch('/api/segnalazioni')
+    .then(response => response.json())
+    .then(data => {
+        data.forEach(segnalazione => {
+            aggiungiMarker(segnalazione);
+        });
+    })
+    .catch(error => console.error('Errore:', error));
