@@ -14,18 +14,24 @@
         #modal, #commentModal {
             display: none;
             position: absolute;
-            background: white;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+            z-index: 1000;
+        }
+        #modal {
+            top: 50px;
+            left: 50px;
+        }
+        #commentModal {
+            top: 150px;
+            left: 150px;
         }
     </style>
 </head>
 <body>
 <div id="map" class="map"></div>
 
-<div id="overlay"></div>
 <div id="modal">
     <label for="tipo">Tipo di Segnalazione:</label>
     <select id="tipo">
@@ -48,6 +54,7 @@
     <textarea id="nuovoCommento"></textarea>
     <br>
     <button onclick="aggiungiCommento()">Aggiungi Commento</button>
+    <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
     <button onclick="chiudiCommentModal()">Chiudi</button>
 </div>
 
@@ -69,22 +76,39 @@
         })
     });
 
-    var coordinateCliccate;
-
-    map.on('singleclick', function (event) {
-        coordinateCliccate = ol.proj.toLonLat(event.coordinate);
-        document.getElementById('modal').style.display = 'block';
-        document.getElementById('modal').style.left = event.pixel[0] + 'px';
-        document.getElementById('modal').style.top = event.pixel[1] + 'px';
+    var overlay = new ol.Overlay({
+        element: document.getElementById('overlay')
     });
+    map.addOverlay(overlay);
 
-    function chiudiModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
+    var markerLayer = new ol.layer.Vector({
+        source: new ol.source.Vector()
+    });
+    map.addLayer(markerLayer);
+
+    var selectedMarker = null;
 
     function aggiungiSegnalazione() {
-        const tipo = document.getElementById('tipo').value;
-        const commento = document.getElementById('commento').value;
+        var tipo = document.getElementById('tipo').value;
+        var commento = document.getElementById('commento').value;
+        var coordinate = overlay.getPosition();
+
+        var marker = new ol.Feature({
+            geometry: new ol.geom.Point(coordinate),
+            tipo: tipo,
+            commento: commento
+        });
+
+        marker.setStyle(new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'marker-icon.png',
+                scale: 0.1
+            })
+        }));
+
+        markerLayer.getSource().addFeature(marker);
+
+        document.getElementById('modal').style.display = 'none';
 
         fetch('/api/segnalazioni', {
             method: 'POST',
@@ -94,58 +118,111 @@
             body: JSON.stringify({
                 tipo: tipo,
                 commento: commento,
-                data: new Date(),
-                coordinate: coordinateCliccate
+                coordinate: ol.proj.toLonLat(coordinate)
             })
-        })
-            .then(response => response.json())
-            .then(data => {
-                aggiungiMarker(data);
-                chiudiModal();
-            });
+        }).then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Errore:', error));
     }
 
-    function aggiungiMarker(segnalazione) {
-        var iconFeature = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
-            tipo: segnalazione.tipo,
-            commento: segnalazione.commento,
-            data: segnalazione.data
-        });
-
-        var iconStyle = new ol.style.Style({
-            image: new ol.style.Icon({
-                anchor: [0.5, 1],
-                anchorXUnits: 'fraction',
-                anchorYUnits: 'fraction',
-                src: 'marker-icon.png',
-                scale: 0.1 // dimensione costante
-            })
-        });
-
-        iconFeature.setStyle(iconStyle);
-
-        var vectorSource = new ol.source.Vector({
-            features: [iconFeature]
-        });
-
-        var markerLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
-
-        map.addLayer(markerLayer);
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
     }
 
-    // Carica i marker esistenti al caricamento della pagina
-    window.onload = function() {
-        fetch('/api/segnalazioni')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(segnalazione => {
-                    aggiungiMarker(segnalazione);
+    function aggiungiCommento() {
+        var nuovoCommento = document.getElementById('nuovoCommento').value;
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}/commento`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ commento: nuovoCommento })
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    selectedMarker.set('commento', data.commento);
+                })
+                .catch(error => console.error('Errore:', error));
+        }
+    }
+
+    function chiudiCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+    }
+
+    function eliminaSegnalazione() {
+        if (selectedMarker) {
+            var id = selectedMarker.getId();
+            fetch(`/api/segnalazioni/${id}`, {
+                method: 'DELETE'
+            }).then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    markerLayer.getSource().removeFeature(selectedMarker);
+                    selectedMarker = null;
+                    document.getElementById('commentModal').style.display = 'none';
+                })
+                .catch(error => console.error('Errore:', error));
+        }
+    }
+
+    function mostraSegnalazione(marker) {
+        selectedMarker = marker;
+        var coordinate = marker.getGeometry().getCoordinates();
+        var tipo = marker.get('tipo');
+        var commento = marker.get('commento');
+
+        var dettagli = `
+            <p>Tipo: ${tipo}</p>
+            <p>Commento: ${commento}</p>
+            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
+        `;
+        document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
+        document.getElementById('commentModal').style.display = 'block';
+    }
+
+    // Evento per aggiungere un nuovo marker
+    map.on('singleclick', function(event) {
+        var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
+        });
+
+        if (feature) {
+            mostraSegnalazione(feature);
+        } else {
+            var coordinate = event.coordinate;
+            document.getElementById('modal').style.display = 'block';
+            overlay.setPosition(coordinate);
+        }
+    });
+
+    // Carica le segnalazioni dal server
+    fetch('/api/segnalazioni')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(segnalazione => {
+                var marker = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
+                    tipo: segnalazione.tipo,
+                    commento: segnalazione.commento,
+                    id: segnalazione._id
                 });
+
+                marker.setId(segnalazione._id);
+
+                marker.setStyle(new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: 'marker-icon.png',
+                        scale: 0.1
+                    })
+                }));
+
+                markerLayer.getSource().addFeature(marker);
             });
-    };
+        })
+        .catch(error => console.error('Errore:', error));
 </script>
 </body>
 </html>
