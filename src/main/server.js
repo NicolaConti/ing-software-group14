@@ -227,16 +227,3 @@ function generateID() {
     return id;
 }
 
-app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
-    const segnalazione = new Segnalazione({
-        id: generateID(), // Aggiungi un ID generato
-        tipo,
-        commento,
-        coordinate
-    });
-    await segnalazione.save();
-    res.json(segnalazione);
-});
-
-// Ogni segnalazione avrà un ID univoco generato da generateID()
