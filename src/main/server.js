@@ -10,38 +10,9 @@ const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
 
-// Variabile per l'ID delle segnalazioni
-let letId = 0;
-
-// Funzione per leggere il contatore dal file
-function leggiIdDalFile() {
-    try {
-        const data = fs.readFileSync('counter.txt', 'utf8');
-        letId = parseInt(data, 10) || 0;
-    } catch (err) {
-        console.error('Errore durante la lettura del contatore dal file:', err);
-        letId = 0;
-    }
-}
-
-// Funzione per salvare il contatore nel file
-function salvaIdNelFile() {
-    try {
-        fs.writeFileSync('counter.txt', letId.toString(), 'utf8');
-    } catch (err) {
-        console.error('Errore durante il salvataggio del contatore nel file:', err);
-    }
-}
-
-// Funzione per incrementare l'ID delle segnalazioni
-function incrementaId() {
-    letId++;
-    salvaIdNelFile();
-    return letId;
-}
-
-// Leggi il contatore dal file al momento dell'avvio del server
-leggiIdDalFile();
+// Importa il modulo counter.js
+const Counter = require('./models/counter');
+const { getNextId } = require('./models/counter');
 
 // Middleware
 app.use(cors());
@@ -245,8 +216,10 @@ app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
 
     try {
+        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
+
         const newSegnalazione = new Segnalazione({
-            id: incrementaId(), // Chiamata alla funzione per incrementare l'ID
+            id: newId, // Usa il nuovo ID generato
             tipo,
             commento,
             coordinate,
@@ -272,7 +245,11 @@ app.post('/logout', async (req, res) => {
     });
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Funzione per avviare il server
+async function startServer() {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
+
+startServer();
