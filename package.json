@@ -1,10 +1,11 @@
 {
   "name": "ingsoftware",
   "version": "1.0.0",
-  "description": "### Il nostro progetto Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
-  "main": "index.js",
+  "description": "### Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cd backend && node server.js",
+    "build": "npm install && npm run build"
   },
   "author": "",
   "license": "ISC",

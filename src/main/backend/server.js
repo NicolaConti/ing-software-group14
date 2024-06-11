@@ -430,11 +430,10 @@ app.post('/close-segnalazione', async (req, res) => {
     }
 });
 
-// Funzione per avviare il server
-async function startServer() {
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
-}
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
 
-startServer();
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
