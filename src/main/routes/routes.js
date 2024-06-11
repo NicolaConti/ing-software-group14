@@ -1,15 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const segnalazioneController = require('../models/segnalazioniController');
+const segnalazioniController = require('../models/segnalazioniController'); // Modificato per puntare al controller
 
-app.use('/', routes);
 // Rotte per le segnalazioni
-router.post('/segnalazioni', segnalazioneController.creaSegnalazione);
-router.post('/segnalazioni/:idSegnalazione/commento', segnalazioneController.aggiungiCommento);
-router.get('/segnalazioni/:idSegnalazione/commenti', segnalazioneController.ottieniCommenti);
-router.delete('/segnalazioni/:idSegnalazione', segnalazioneController.eliminaSegnalazione);
-
-// Assicurati di aver incluso questo router nel tuo file server principale
-// app.use('/api', router);
+router.post('/segnalazioni', segnalazioniController.creaSegnalazione);
+router.post('/segnalazioni/:idSegnalazione/commento', segnalazioniController.aggiungiCommento);
+router.get('/segnalazioni/:idSegnalazione/commenti', segnalazioniController.ottieniCommenti);
+//router.delete('/segnalazioni/:idSegnalazione', segnalazioniController.eliminaSegnalazione);
 
 module.exports = router;

@@ -18,6 +18,7 @@ const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
+const routes = require('../routes/routes');
 
 // Middleware
 app.use(cors());
@@ -429,6 +430,8 @@ app.post('/close-segnalazione', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
+app.use('/api', routes);
 
 // Funzione per avviare il server
 async function startServer() {

@@ -1,39 +1,27 @@
-const Segnalazione = require('./Segnalazione');
-const Counter = require('./counter');
-
-async function getNextSequence(name) {
-    const counter = await Counter.findByIdAndUpdate(
-        { _id: name },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-    );
-    return counter.seq;
-}
+const Segnalazione = require('../models/Segnalazione');
+const { getNextId } = require('../models/counter');
 
 exports.creaSegnalazione = async (req, res) => {
     try {
-        const { tipo, commento, data, coordinate } = req.body;
-        const nextId = await getNextSequence('segnalazioneid');
+        const { tipo, commento, coordinate } = req.body;
+        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
 
         const nuovaSegnalazione = new Segnalazione({
-            _id: nextId,
-            tipo: tipo,
-            commento: commento,
-            data: data,
-            coordinate: coordinate
+            id: newId, // Usa il nuovo ID generato
+            tipo,
+            commento,
+            coordinate,
+            feedbacks: []
         });
 
-        const segnalazioneSalvata = await nuovaSegnalazione.save();
-
-        res.status(201).json(segnalazioneSalvata);
+        await nuovaSegnalazione.save();
+        res.status(201).json(nuovaSegnalazione);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante la creazione della segnalazione' });
     }
 };
 
-
-// Funzione per aggiungere un commento a una segnalazione esistente
 exports.aggiungiCommento = async (req, res) => {
     try {
         const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
@@ -58,8 +46,6 @@ exports.aggiungiCommento = async (req, res) => {
     }
 };
 
-
-// Funzione per ottenere i commenti di una segnalazione
 exports.ottieniCommenti = async (req, res) => {
     try {
         const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
@@ -70,19 +56,5 @@ exports.ottieniCommenti = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante il recupero dei commenti' });
-    }
-};
-
-// Funzione per ottenere i feedback di una segnalazione
-exports.ottieniFeedbacks = async (req, res) => {
-    try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
-        if (!segnalazione) {
-            return res.status(404).json({ error: 'Segnalazione non trovata' });
-        }
-        res.json(segnalazione.feedbacks);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Errore durante il recupero dei feedback' });
     }
 };

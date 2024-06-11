@@ -59,6 +59,8 @@
     <br>
     <button onclick="aggiungiCommento()">Aggiungi Commento</button>
     <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
+    <br>
+    <div id="feedbacks"></div>
     <button onclick="chiudiCommentModal()">Chiudi</button>
 </div>
 
@@ -200,6 +202,7 @@
 
         // Pulisci il contenuto del div dei commenti
         document.getElementById('commenti').innerHTML = '';
+        document.getElementById('feedbacks').innerHTML = '';
 
         // Fetch e visualizza i commenti della segnalazione
         fetch(`/api/segnalazioni/${marker.getId()}/commenti`)
@@ -210,6 +213,19 @@
                     var commentElement = document.createElement('p');
                     commentElement.textContent = commento;
                     commentiDiv.appendChild(commentElement);
+                });
+            })
+            .catch(error => console.error('Errore:', error));
+
+        // Fetch e visualizza i feedback della segnalazione
+        fetch(`/api/segnalazioni/${marker.getId()}/feedbacks`)
+            .then(response => response.json())
+            .then(feedbacks => {
+                var feedbacksDiv = document.getElementById('feedbacks');
+                feedbacks.forEach(feedback => {
+                    var feedbackElement = document.createElement('p');
+                    feedbackElement.textContent = feedback;
+                    feedbacksDiv.appendChild(feedbackElement);
                 });
             })
             .catch(error => console.error('Errore:', error));
@@ -269,6 +285,7 @@
             feature.setStyle(iconStyle);
         });
     });
+
 </script>
 </body>
 </html>
