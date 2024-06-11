@@ -44,6 +44,15 @@ const LoginHistorySchema = new mongoose.Schema( {
 
 const LoginHistory = mongoose.model('LoginHistory', LoginHistorySchema);
 
+const segnalazioniSchema = new mongoose.Schema({
+    Id: Number,
+    tipo: String,
+    commento: String,
+    coordinate: Array(2)
+}, {collection: 'Segnalazioni'});
+
+const Segnalazioni = mongoose.model('Segnalazioni', segnalazioniSchema);
+
 app.use(cors());
 // Middleware to parse JSON body
 app.use(bodyParser.json());

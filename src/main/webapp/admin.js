@@ -8,6 +8,7 @@ const app = express();
 const port = 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
+
 // Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
@@ -53,6 +54,15 @@ const LoginHistorySchema = new mongoose.Schema( {
 }, {collection: 'LoginHistory'});
 
 const LoginHistory = mongoose.model('LoginHistory', LoginHistorySchema);
+
+const segnalazioniSchema = new mongoose.Schema({
+    Id: Number,
+    tipo: String,
+    commento: String,
+    coordinate: Array(2)
+}, {collection: 'Segnalazioni'});
+
+const Segnalazioni = mongoose.model('Segnalazioni', segnalazioniSchema);
 
 app.use(cors());
 // Middleware to parse JSON body
@@ -160,15 +170,58 @@ app.post('/suspend-user', async (req, res) => {
 
         if (user) {
             // User found
-            RegUser.updateOne({username: user.username}, {$set: {suspended: "1"}}).exec().then(() => {
-                console.log("User suspended updated successfully");
-            }).catch((err) => {
-                console.error("Error updating user suspended: ", err);
-            });
+            if (user.suspended === "1") {
+                return res.status(400).send('User is already suspended');
+            }
+
+            // Update the user's suspended status to "1"
+            await RegUser.updateOne({ username: user.username }, { $set: { suspended: "1" } });
+            console.log("User suspended successfully");
 
             res.send('Suspend successful');
         } else {
-            // User not found or password incorrect, login failed
+            // User not found
+            res.status(401).send('Invalid username');
+        }
+    } catch (err) {
+        console.error("Error during suspension:", err);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/fetch-suspended', async (req, res) => {
+    try {
+        const RegUsers = await RegUser.find({suspended: "1"} ).exec();
+        const result = RegUsers.map(history => `${history.username}`);
+        console.log('Processed Result:', result); // Log processed result
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching login history:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/unsuspend-user', async (req, res) => {
+    const username = req.body.username;
+    try {
+        console.log("Attempting to suspend:", username);
+        let query = RegUser.findOne();
+        query.where('username', username);
+
+        user = await query.exec();
+        console.log("Query result:", user);
+
+        if (user) {
+            // User found
+            RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec().then(() => {
+                console.log("User unsuspended updated successfully");
+            }).catch((err) => {
+                console.error("Error updating user unsuspended: ", err);
+            });
+
+            res.send('Unsuspend successful');
+        } else {
+            // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
@@ -179,11 +232,8 @@ app.post('/suspend-user', async (req, res) => {
 
 app.get('/fetch-segnalazioni', async (req, res) => {
     try {
-
-        //TODO EXTRA IMPORTANT
-
-        const RegUsers = await RegUser.find().exec();
-        const result = RegUsers.map(history => `${history.username}`);
+        const Segnalaz = await Segnalazioni.find().exec();
+        const result = Segnalaz.map(history => `${history.Id}, ${history.tipo}, ${history.commento}`);
         console.log('Processed Result:', result); // Log processed result
         res.json(result);
     } catch (error) {
@@ -193,30 +243,27 @@ app.get('/fetch-segnalazioni', async (req, res) => {
 });
 
 app.post('/close-segnalazione', async (req, res) => {
-    const username = req.body.username;
+    const id = req.body.id;
     try {
-        console.log("Attempting to close:", username);
-
-        //TODO EXTRA IMPORTANT
-
-        let query = RegUser.findOne();
-        query.where('username', username);
+        console.log("Attempting to close:", id);
+        let query = Segnalazioni.findOne();
+        query.where('Id', id);
 
         user = await query.exec();
         console.log("Query result:", user);
 
         if (user) {
             // User found
-            RegUser.updateOne({username: user.username}, {$set: {suspended: "1"}}).exec().then(() => {
-                console.log("User suspended updated successfully");
+            RegUser.deleteOne({Id: user.Id} ).exec().then(() => {
+                console.log("Segnalazione close updated successfully");
             }).catch((err) => {
-                console.error("Error updating user suspended: ", err);
+                console.error("Error closing segnalazione: ", err);
             });
 
-            res.send('Suspend successful');
+            res.send('Closing segnalazione successful');
         } else {
             // User not found or password incorrect, login failed
-            res.status(401).send('Invalid username');
+            res.status(401).send('Invalid ID');
         }
     } catch (err) {
         console.error("Error during login:", err);

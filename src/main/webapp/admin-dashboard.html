@@ -52,7 +52,8 @@
             place-items: center;
         }
         #close-segnalazione-form,
-        #suspend-user-form {
+        #suspend-user-form,
+        #unsuspend-user-form {
             text-align: center;
             align-items: center;
             border: 5px;
@@ -98,10 +99,27 @@
 
             <button id="suspend-user-button" >Sospendi Utente</button>
         </form>
+        <br>
+        <br>
+        <form id="fetch-suspended-form">
+            <button id="fetch-all-suspended">Elenco utenti sospesi</button>
+        </form>
+
+        <span id="suspended-users-text" style="margin: 5px"></span>
+
+        <form id="unsuspend-user-form" action="/unsuspend-user" method="post">
+
+            <div class="form-group">
+                <label for="username2"></label>
+                <input type="text" name="username2" id="username2" placeholder="Utente da sbloccare" required>
+            </div>
+
+            <button id="unsuspend-user-button" >Rimuovi sospensione</button>
+        </form>
     </div>
     <div class="section">
         <form id="fetch-segnalazioni-form">
-            <button id="fetch-all-segnalazioni">Elenco utenti iscritti</button>
+            <button id="fetch-all-segnalazioni">Elenco segnalazioni aperte</button>
         </form>
 
         <span id="all-segnalazioni-text" style="margin: 5px"></span>
@@ -109,11 +127,11 @@
         <form id="close-segnalazione-form" action="/close-segnalazione" method="post">
 
             <div class="form-group">
-                <label for="segnalazione"></label>
-                <input type="text" name="segnalazione" id="segnalazione" placeholder="Segnalazione da chiudere" required>
+                <label for="id"></label>
+                <input type="text" name="id" id="id" placeholder="ID Segnalazione da chiudere" required>
             </div>
 
-            <button id="close-segnalazione-button" >Sospendi Utente</button>
+            <button id="close-segnalazione-button" >Chiudi segnalazione</button>
         </form>
 
     </div>
@@ -178,6 +196,49 @@
             alert('User ' + username + ' suspended successfully');
         } else {
             alert('Suspend failed: ' + await response.text());
+        }
+    });
+</script>
+
+<script>
+    document.getElementById('fetch-all-suspended').addEventListener('click', function(event) {
+        event.preventDefault();
+        console.log('Click on "Fetch All Suspended" button'); // Log when the button is clicked
+        fetch('/fetch-suspended')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                console.log('Response received'); // Log when the response is received
+                return response.json();
+            })
+            .then(data => {
+                console.log('Received data:', data); // Log the received data
+                const container = document.getElementById('all-suspended-text');
+                container.innerHTML = '<ul>' + data.map(item => `<li>${item}</li>`).join('') + '</ul>';
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    });
+</script>
+
+<script>
+    document.getElementById('unsuspend-user-form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(event.target); // Use event.target to get the form
+        const username = formData.get('username2');
+
+        // Send request to server
+        const response = await fetch('/unsuspend-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+        });
+
+        if (response.ok) {
+            alert('User ' + username + ' unsuspended successfully');
+        } else {
+            alert('Unsuspend failed: ' + await response.text());
         }
     });
 </script>
