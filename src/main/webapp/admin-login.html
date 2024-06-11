@@ -85,7 +85,7 @@
         console.log("password:", password);
 
         // Send login request to server
-        const response = await fetch('/login', {
+        const response = await fetch('/admin-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })

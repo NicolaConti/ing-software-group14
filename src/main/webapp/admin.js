@@ -89,7 +89,7 @@ app.get('/recovery', (req, res) => {
     res.sendFile(path.join(__dirname, 'recovery.html'));
 });
 
-app.post('/login', async (req, res) => {
+app.post('/admin-login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     try {
@@ -124,7 +124,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.post('/logout', async (req, res) => {
+app.post('/admin-logout', async (req, res) => {
     await Admin.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
         console.log("Logout Successful");
         console.log("Admin auth updated successfully (logout)");

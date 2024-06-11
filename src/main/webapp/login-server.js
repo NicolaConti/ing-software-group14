@@ -82,7 +82,7 @@ app.get('/registrazione', (req, res) => {
     res.sendFile(path.join(__dirname, 'registrazione.html'));
 });
 
-app.get('/admin-login', (req, res) => {
+app.get('/admin', (req, res) => {
     // Send the admin-login.html file
     res.sendFile(path.join(__dirname, 'admin-login.html'));
 });
