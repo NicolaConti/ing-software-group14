@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
+let admin;
 let newLogin;
 
 // Importa moduli per MongoDB
@@ -266,17 +267,17 @@ app.post('/admin-login', async (req, res) => {
         query.where('username', username);
         query.where('password', password);
 
-        user = await query.exec();
+        admin = await query.exec();
 
         // Log the result of the query (for debugging)
-        console.log("Query result:", user);
-        if (user) {
+        console.log("Query result:", admin);
+        if (admin) {
             // User found, login successful
 
-            Admin.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
-                console.log("Admin " + user.username + " auth updated successfully (login)");
+            Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec().then(() => {
+                console.log("Admin " + admin.username + " auth updated successfully (login)");
             }).catch((err) => {
-                console.error("Error updating Admin " + user.username + " auth (login): ", err);
+                console.error("Error updating Admin " + admin.username + " auth (login): ", err);
             });
 
             res.status(200).json({ redirect: 'admin-dashboard.html' });
@@ -291,12 +292,12 @@ app.post('/admin-login', async (req, res) => {
 });
 
 app.post('/admin-logout', async (req, res) => {
-    await Admin.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
+    await Admin.updateOne({username: admin.username}, {$set: {auth: "0"}}).exec().then(() => {
         console.log("Logout Successful");
-        console.log("Admin " + user.username + " auth updated successfully (logout)");
+        console.log("Admin " + admin.username + " auth updated successfully (logout)");
         res.redirect('login.html');
     }).catch((err) => {
-        console.error("Error updating admin " + user.username + " auth (logout): ", err);
+        console.error("Error updating admin " + admin.username + " auth (logout): ", err);
     });
 });
 

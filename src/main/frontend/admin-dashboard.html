@@ -269,7 +269,7 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const segnalazione = formData.get('segnalazione');
+        const segnalazione = formData.get('id');
 
         // Send request to server
         const response = await fetch('/close-segnalazione', {
