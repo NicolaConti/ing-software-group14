@@ -269,21 +269,22 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const segnalazione = formData.get('id_segnalazione');
+        const id_segnalazione = formData.get('id_segnalazione'); // Get the id_segnalazione from the form data
 
         // Send request to server
         const response = await fetch('/close-segnalazione', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ segnalazione })
+            body: JSON.stringify({ id_segnalazione }) // Use the correct property name
         });
 
         if (response.ok) {
-            alert('Segnalazione ' + segnalazione + ' closed successfully');
+            alert('Segnalazione ' + id_segnalazione + ' closed successfully');
         } else {
             alert('Closing failed: ' + await response.text());
         }
     });
 </script>
+
 </body>
 </html>
