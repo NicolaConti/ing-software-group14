@@ -148,6 +148,7 @@ app.post('/login', async (req, res) => {
         console.log("Query result:", user);
         if (user) {
             const dateTime = getCurrentDateTime();
+            console.log(dateTime);
             newLogin = new LoginHistory({username, dateTime});
             await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
