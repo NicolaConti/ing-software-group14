@@ -2,7 +2,7 @@
   "name": "ingsoftware",
   "version": "1.0.0",
   "description": "### Un servizio accessibile dove poter segnalare i vari problemi della citta' al Comune e soprattutto agli altri cittadini: una webapp dove tenere sott'occhio questi elementi in tempo reale.",
-  "main": "server.js",
+  "main": "src/backend/server.js",
   "scripts": {},
   "author": "",
   "license": "ISC",

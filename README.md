@@ -28,7 +28,7 @@ Verificare che tutte le dependencies relative a node.js siano state installate c
 
 Nel terminale, eseguire:
 ```
-cd src/main
+cd src/main/backend
 node server.js
 ```
 

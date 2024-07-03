@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commenti della Segnalazione</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            padding: 0;
+            background-color: #4CAF50;
+        }
+
+        .comments-header {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h2 {
+            text-align: center;
+            flex: 1;
+            margin: 0;
+            color: #8B4513;
+        }
+
+        .comments-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #4CAF50;
+        }
+
+        .section {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            align-self: flex-start;
+        }
+
+        button:hover {
+            background-color: #6B3B0A;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="comments-header">
+    <h2>Commenti della Segnalazione</h2>
+    <button onclick="goBack()">Torna Indietro</button>
+</div>
+
+<div class="comments-container">
+    <div class="section" id="comments-section">
+        <h3>Commenti</h3>
+        <div id="comments"></div>
+    </div>
+
+    <div class="section" id="new-comment-section">
+        <h3>Aggiungi un nuovo commento</h3>
+        <div class="form-group">
+            <label for="newComment">Commento:</label>
+            <textarea id="newComment" rows="4" required></textarea>
+        </div>
+        <button onclick="addComment()">Aggiungi Commento</button>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const reportId = urlParams.get('reportId');
+
+    function fetchComments() {
+        fetch(`/api/segnalazioni/${reportId}/commenti`)
+            .then(response => response.json())
+            .then(data => {
+                const commentsDiv = document.getElementById('comments');
+                commentsDiv.innerHTML = '';
+                data.forEach(comment => {
+                    const commentElement = document.createElement('li');
+                    commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
+                    commentsDiv.appendChild(commentElement);
+                });
+            })
+            .catch(error => console.error('Errore:', error));
+    }
+
+    function addComment() {
+        const newComment = document.getElementById('newComment').value;
+        fetch(`/api/segnalazioni/${reportId}/commento`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ commento: newComment, username: 'user' })
+        }).then(response => response.json())
+            .then(data => {
+                document.getElementById('newComment').value = '';
+                fetchComments();
+            })
+            .catch(error => console.error('Errore:', error));
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+
+    window.onload = fetchComments;
+</script>
+
+</body>
+</html>
