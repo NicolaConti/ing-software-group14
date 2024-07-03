@@ -415,7 +415,7 @@ app.post('/close-segnalazione', async (req, res) => {
     try {
         console.log("Attempting to close:", id);
         let query = Segnalazione.findOne();
-        query.where('id', id);
+        query.where('id', Number(id));
 
         segnalazione = await query.exec();
         console.log("Query result:", segnalazione);
