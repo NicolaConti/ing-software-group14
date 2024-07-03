@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const routes = require('../routes/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,8 +12,7 @@ const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.
 let user;
 let newLogin;
 
-// Importa il modulo counter.js
-const Counter = require('../models/counter');
+// Importa moduli per MongoDB
 const { getNextId } = require('../models/counter');
 const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
@@ -30,6 +30,7 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
         }
     }
 }));
+app.use('/api', routes);
 
 // Connect to MongoDB
 mongoose.connect(url, {
@@ -83,6 +84,17 @@ function validatePassword(password) {
     return re.test(String(password));
 }
 
+function getCurrentDateTime() {
+    const currentdate = new Date();
+
+    const pad = (n) => (n < 10 ? '0' + n : n);
+
+    return `${pad(currentdate.getDate())}/${
+        pad(currentdate.getMonth() + 1)}/${currentdate.getFullYear()} @ ${
+        pad(currentdate.getHours())}:${pad(currentdate.getMinutes())}:${pad(currentdate.getSeconds())}`;
+}
+
+
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
     const { username, password, email } = req.body;
@@ -135,13 +147,7 @@ app.post('/login', async (req, res) => {
 
         console.log("Query result:", user);
         if (user) {
-            let currentdate = new Date();
-            let dateTime = currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/"
-                + currentdate.getFullYear() + " @ "
-                + currentdate.getHours() + ":"
-                + currentdate.getMinutes() + ":"
-                + currentdate.getSeconds();
+            const dateTime = getCurrentDateTime();
             newLogin = new LoginHistory({username, dateTime});
             await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
@@ -234,7 +240,7 @@ app.post('/api/segnalazioni', async (req, res) => {
 app.post('/logout', async (req, res) => {
     if(user){
         await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
-            res.redirect('login.html');
+            res.redirect('../frontend/login.html');
             console.log("Logout Successful");
             console.log("User " + user.username + " auth updated successfully (logout)");
         }).catch((err) => {
@@ -242,7 +248,7 @@ app.post('/logout', async (req, res) => {
         });
     }
     else{
-        res.redirect('login.html');
+        res.redirect('../frontend/login.html');
         console.log("Guest user redirect successful");
     }
 
@@ -287,7 +293,7 @@ app.post('/admin-logout', async (req, res) => {
     await Admin.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
         console.log("Logout Successful");
         console.log("Admin " + user.username + " auth updated successfully (logout)");
-        res.redirect('login.html');
+        res.redirect('../frontend/login.html');
     }).catch((err) => {
         console.error("Error updating admin " + user.username + " auth (logout): ", err);
     });
@@ -350,7 +356,7 @@ app.post('/suspend-user', async (req, res) => {
 
 app.get('/fetch-suspended', async (req, res) => {
     try {
-        const RegUsers = await RegUser.find({suspended: "1"} ).exec();
+        const RegUsers = await RegUser.find({suspended: "1"}, null, null ).exec();
         const result = RegUsers.map(history => `${history.username}`);
         console.log('Processed Result:', result); // Log processed result
         res.json(result);
@@ -431,7 +437,7 @@ app.post('/close-segnalazione', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'frontend/build', 'login.html'));
 });
 
 app.listen(PORT, () => {
