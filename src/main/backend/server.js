@@ -87,13 +87,15 @@ function validatePassword(password) {
 }
 
 function getCurrentDateTime() {
-    const currentdate = new Date();
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    const pad = (n) => (n < 10 ? '0' + n : n);
-
-    return `${pad(currentdate.getDate())}/${
-        pad(currentdate.getMonth() + 1)}/${currentdate.getFullYear()} @ ${
-        pad(currentdate.getHours())}:${pad(currentdate.getMinutes())}:${pad(currentdate.getSeconds())}`;
+    return `${year}/${month}/${day} @ ${hours}:${minutes}:${seconds}`;
 }
 
 
@@ -440,7 +442,7 @@ app.post('/close-segnalazione', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/', 'login.html'));
+    res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));
 });
 
 app.listen(PORT, () => {
