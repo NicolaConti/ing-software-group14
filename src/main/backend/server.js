@@ -153,7 +153,7 @@ app.post('/login', async (req, res) => {
         if (user) {
             const dateTime = getCurrentDateTime();
             newLogin = new LoginHistory({username, dateTime});
-            console.log(newLogin);
+            console.log("Tipo: " + typeof(dateTime) + "data: " + dateTime);
             await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
                 console.log("User " + user.username + " auth updated successfully (login)");
