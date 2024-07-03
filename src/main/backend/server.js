@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 let user;
 let admin;
+let segnalazione;
 let newLogin;
 
 // Importa moduli per MongoDB
@@ -416,12 +417,12 @@ app.post('/close-segnalazione', async (req, res) => {
         let query = Segnalazione.findOne();
         query.where('id', id);
 
-        user = await query.exec();
-        console.log("Query result:", user);
+        segnalazione = await query.exec();
+        console.log("Query result:", segnalazione);
 
-        if (user) {
+        if (segnalazione) {
             // User found
-            Segnalazione.deleteOne({Id: user.Id} ).exec().then(() => {
+            Segnalazione.deleteOne({id: segnalazione.id} ).exec().then(() => {
                 console.log("Segnalazione close updated successfully");
             }).catch((err) => {
                 console.error("Error closing segnalazione: ", err);
@@ -439,7 +440,7 @@ app.post('/close-segnalazione', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/build', 'login.html'));
+    res.sendFile(path.join(__dirname, 'frontend/', 'login.html'));
 });
 
 app.listen(PORT, () => {
