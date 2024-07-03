@@ -150,8 +150,8 @@ app.post('/login', async (req, res) => {
         console.log("Query result:", user);
         if (user) {
             const dateTime = getCurrentDateTime();
-            console.log(dateTime);
             newLogin = new LoginHistory({username, dateTime});
+            console.log(newLogin);
             await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
                 console.log("User " + user.username + " auth updated successfully (login)");
@@ -411,7 +411,7 @@ app.get('/fetch-segnalazioni', async (req, res) => {
 });
 
 app.post('/close-segnalazione', async (req, res) => {
-    const id = req.body.id;
+    const id = req.body.id_segnalazione;
     try {
         console.log("Attempting to close:", id);
         let query = Segnalazione.findOne();

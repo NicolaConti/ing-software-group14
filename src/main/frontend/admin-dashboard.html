@@ -127,8 +127,8 @@
         <form id="close-segnalazione-form" action="/close-segnalazione" method="post">
 
             <div class="form-group">
-                <label for="id"></label>
-                <input type="text" name="id" id="id" placeholder="ID Segnalazione da chiudere" required>
+                <label for="id_segnalazione"></label>
+                <input type="text" name="id_segnalazione" id="id_segnalazione" placeholder="ID Segnalazione da chiudere" required>
             </div>
 
             <button id="close-segnalazione-button" >Chiudi segnalazione</button>
@@ -269,7 +269,7 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const segnalazione = formData.get('id');
+        const segnalazione = formData.get('id_segnalazione');
 
         // Send request to server
         const response = await fetch('/close-segnalazione', {
