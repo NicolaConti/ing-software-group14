@@ -240,7 +240,7 @@ app.post('/api/segnalazioni', async (req, res) => {
 app.post('/logout', async (req, res) => {
     if(user){
         await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
-            res.redirect('../frontend/login.html');
+            res.redirect('login.html');
             console.log("Logout Successful");
             console.log("User " + user.username + " auth updated successfully (logout)");
         }).catch((err) => {
@@ -248,7 +248,7 @@ app.post('/logout', async (req, res) => {
         });
     }
     else{
-        res.redirect('../frontend/login.html');
+        res.redirect('login.html');
         console.log("Guest user redirect successful");
     }
 
@@ -293,7 +293,7 @@ app.post('/admin-logout', async (req, res) => {
     await Admin.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
         console.log("Logout Successful");
         console.log("Admin " + user.username + " auth updated successfully (logout)");
-        res.redirect('../frontend/login.html');
+        res.redirect('login.html');
     }).catch((err) => {
         console.error("Error updating admin " + user.username + " auth (logout): ", err);
     });
