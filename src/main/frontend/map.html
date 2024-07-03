@@ -60,6 +60,7 @@
     <button onclick="aggiungiCommento()">Aggiungi Commento</button>
     <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
     <button onclick="chiudiCommentModal()">Chiudi</button>
+    <button id="viewComments">View Comments</button>
 </div>
 
 <form id="login-form" action="/logout" method="post">
@@ -191,11 +192,11 @@
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
 
-        var dettagli = `
-        <p>Tipo: ${tipo}</p>
+        var dettagli =
+            `<p>Tipo: ${tipo}</p>
         <p>Commento: ${commento}</p>
-        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
-        `;
+        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
+
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
         // Pulisci il contenuto del div dei commenti
@@ -215,6 +216,11 @@
             .catch(error => console.error('Errore:', error));
 
         document.getElementById('commentModal').style.display = 'block';
+
+        // Set the link for viewing comments
+        document.getElementById('viewComments').onclick = function() {
+            window.location.href = `/comments.html?reportId=${marker.getId()}`;
+        };
     }
 
     // Evento per aggiungere un nuovo marker

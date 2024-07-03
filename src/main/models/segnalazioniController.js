@@ -32,8 +32,6 @@ exports.creaSegnalazione = async (req, res) => {
     }
 };
 
-
-// Funzione per aggiungere un commento a una segnalazione esistente
 exports.aggiungiCommento = async (req, res) => {
     try {
         const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
@@ -44,7 +42,8 @@ exports.aggiungiCommento = async (req, res) => {
 
         const nuovoCommento = {
             username: req.body.username,
-            commento: req.body.commento
+            commento: req.body.commento,
+            reportId: req.params.idSegnalazione
         };
 
         segnalazione.feedbacks.push(nuovoCommento);
@@ -58,8 +57,6 @@ exports.aggiungiCommento = async (req, res) => {
     }
 };
 
-
-// Funzione per ottenere i commenti di una segnalazione
 exports.ottieniCommenti = async (req, res) => {
     try {
         const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
@@ -70,19 +67,5 @@ exports.ottieniCommenti = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante il recupero dei commenti' });
-    }
-};
-
-// Funzione per ottenere i feedback di una segnalazione
-exports.ottieniFeedbacks = async (req, res) => {
-    try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
-        if (!segnalazione) {
-            return res.status(404).json({ error: 'Segnalazione non trovata' });
-        }
-        res.json(segnalazione.feedbacks);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Errore durante il recupero dei feedback' });
     }
 };

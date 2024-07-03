@@ -153,8 +153,8 @@ app.post('/login', async (req, res) => {
         if (user) {
             const dateTime = getCurrentDateTime();
             newLogin = new LoginHistory();
-            newLogin.username(username);
-            newLogin.date(dateTime);
+            newLogin.username = username;
+            newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
