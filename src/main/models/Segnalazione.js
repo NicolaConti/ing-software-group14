@@ -17,4 +17,7 @@ const segnalazioneSchema = new mongoose.Schema({
 
 const Segnalazione = mongoose.model('Segnalazioni', segnalazioneSchema);
 
+const feedbacks = mongoose.model('feedbacks', feedbackSchema);
+
 module.exports = Segnalazione;
+module.exports = feedbacks;
