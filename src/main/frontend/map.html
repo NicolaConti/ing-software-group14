@@ -53,7 +53,7 @@
 <div id="commentModal">
     <div id="dettagliSegnalazione"></div>
     <div id="commenti"></div>
-    <button onclick="aggiungiCommento()">Aggiungi Commento</button>
+    <!-- <button onclick="aggiungiCommento()">Aggiungi Commento</button> -->
     <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
     <button onclick="chiudiCommentModal()">Chiudi</button>
     <button id="viewComments">View Comments</button>
@@ -139,7 +139,7 @@
         document.getElementById('modal').style.display = 'none';
     }
 
-    function aggiungiCommento() {
+    /*function aggiungiCommento() {
         var nuovoCommento = document.getElementById('nuovoCommento').value;
         if (selectedMarker) {
             var id = selectedMarker.getId();
@@ -160,7 +160,7 @@
                 })
                 .catch(error => console.error('Errore:', error));
         }
-    }
+    } */
 
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
