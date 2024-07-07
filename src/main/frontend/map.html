@@ -129,7 +129,7 @@
             })
         }).then(response => response.json())
             .then(data => {
-                marker.setId(data._id);
+                marker.setId(data.id);
                 console.log(data);
             })
             .catch(error => console.error('Errore:', error));
@@ -138,29 +138,6 @@
     function chiudiModal() {
         document.getElementById('modal').style.display = 'none';
     }
-
-    /*function aggiungiCommento() {
-        var nuovoCommento = document.getElementById('nuovoCommento').value;
-        if (selectedMarker) {
-            var id = selectedMarker.getId();
-            fetch(`/api/segnalazioni/${id}/commento`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ commento: nuovoCommento, username: 'user' }) // Assumi che 'user' sia il nome utente corrente
-            }).then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    var commentiDiv = document.getElementById('commenti');
-                    var commentElement = document.createElement('p');
-                    commentElement.textContent = nuovoCommento;
-                    commentiDiv.appendChild(commentElement);
-                    document.getElementById('nuovoCommento').value = '';
-                })
-                .catch(error => console.error('Errore:', error));
-        }
-    } */
 
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
@@ -195,10 +172,8 @@
 
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
-        // Pulisci il contenuto del div dei commenti
         document.getElementById('commenti').innerHTML = '';
 
-        // Fetch e visualizza i commenti della segnalazione
         fetch(`/api/segnalazioni/${marker.getId()}/commenti`)
             .then(response => response.json())
             .then(commenti => {
@@ -213,13 +188,11 @@
 
         document.getElementById('commentModal').style.display = 'block';
 
-        // Set the link for viewing comments
         document.getElementById('viewComments').onclick = function() {
             window.location.href = `/comments.html?reportId=${marker.getId()}`;
         };
     }
 
-    // Evento per aggiungere un nuovo marker
     map.on('singleclick', function(event) {
         var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
             return feature;
@@ -234,7 +207,6 @@
         }
     });
 
-    // Carica le segnalazioni dal server
     fetch('/api/segnalazioni')
         .then(response => response.json())
         .then(data => {
@@ -243,10 +215,10 @@
                     geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                     tipo: segnalazione.tipo,
                     commento: segnalazione.commento,
-                    id: segnalazione._id
+                    id: segnalazione.id
                 });
 
-                marker.setId(segnalazione._id);
+                marker.setId(segnalazione.id);
 
                 var zoom = map.getView().getZoom();
                 var iconStyle = new ol.style.Style({
@@ -262,7 +234,6 @@
         })
         .catch(error => console.error('Errore:', error));
 
-    // Aggiorna la scala dei marker in base allo zoom della mappa
     map.getView().on('change:resolution', function() {
         var zoom = map.getView().getZoom();
         markerLayer.getSource().getFeatures().forEach(function(feature) {

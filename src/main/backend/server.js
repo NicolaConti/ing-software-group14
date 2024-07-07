@@ -443,6 +443,27 @@ app.post('/close-segnalazione', async (req, res) => {
     }
 });
 
+app.post('/api/segnalazioni/:id/commento', async (req, res) => {
+    const { commento, username } = req.body;
+    const segnalazioneId = req.params.id;
+
+    try {
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
+        if (!segnalazione) {
+            return res.status(404).json({ message: 'Segnalazione non trovata' });
+        }
+
+        const newId = await getNextId('feedbackId');
+        segnalazione.feedbacks.push({ id: newId, username, commento });
+        await segnalazione.save();
+
+        res.status(200).json({ message: 'Feedback aggiunto con successo' });
+    } catch (err) {
+        console.error("Errore durante l'aggiunta del feedback:", err);
+        res.status(500).json({ message: 'Errore interno del server' });
+    }
+});
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));
 });
