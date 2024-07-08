@@ -38,7 +38,6 @@ exports.creaSegnalazione = async (req, res) => {
 
 exports.aggiungiCommento = async (req, res) => {
     try {
-        console.log('ID segnalazione:', req.params.idSegnalazione); // Log per il debug
         const segnalazione = await Segnalazione.findOne({ id: req.params.idSegnalazione });
 
         if (!segnalazione) {
@@ -63,7 +62,6 @@ exports.aggiungiCommento = async (req, res) => {
 
 exports.ottieniCommenti = async (req, res) => {
     try {
-        console.log('ID segnalazione:', req.params.idSegnalazione); // Log per il debug
         const segnalazione = await Segnalazione.findOne({ id: req.params.idSegnalazione });
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
