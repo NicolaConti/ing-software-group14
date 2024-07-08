@@ -21,7 +21,7 @@ exports.creaSegnalazione = async (req, res) => {
         const nextId = await getNextSequence('segnalazioneid');
 
         const nuovaSegnalazione = new Segnalazione({
-            id: nextId, // Usa il campo separato per l'ID numerico
+            id: nextId,
             tipo,
             commento,
             data,

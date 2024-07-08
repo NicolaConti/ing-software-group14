@@ -167,14 +167,13 @@
 
         var dettagli =
             `<p>Tipo: ${tipo}</p>
-            <p>Commento: ${commento}</p>
-            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
+        <p>Commento: ${commento}</p>
+        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
 
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
-
         document.getElementById('commenti').innerHTML = '';
 
-        fetch(`/api/segnalazioni/${marker.getId()}/feedbacks`)
+        fetch(`/api/segnalazioni/${marker.get('id')}/feedbacks`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
@@ -189,7 +188,7 @@
         document.getElementById('commentModal').style.display = 'block';
 
         document.getElementById('viewComments').onclick = function() {
-            window.location.href = `/comments.html?reportId=${marker.getId()}`;
+            window.location.href = `/comments.html?reportId=${marker.get('id')}`;
         };
     }
 
@@ -206,6 +205,7 @@
             overlay.setPosition(coordinate);
         }
     });
+
 
     fetch('/api/segnalazioni')
         .then(response => response.json())

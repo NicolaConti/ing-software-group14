@@ -178,7 +178,7 @@ app.post('/login', async (req, res) => {
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({ id: req.params.id }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -191,7 +191,7 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({ id: req.params.id }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
