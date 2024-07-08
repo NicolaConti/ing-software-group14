@@ -21,7 +21,8 @@ exports.creaSegnalazione = async (req, res) => {
         const nextId = await getNextSequence('segnalazioneid');
 
         const nuovaSegnalazione = new Segnalazione({
-            _id: nextId,
+            _id: nextId, // Se hai scelto l'Opzione 1
+            // id: nextId, // Se hai scelto l'Opzione 2
             tipo,
             commento,
             data,
@@ -38,7 +39,7 @@ exports.creaSegnalazione = async (req, res) => {
 
 exports.aggiungiCommento = async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        const segnalazione = await Segnalazione.findOne({ id: req.params.idSegnalazione });
 
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
@@ -62,7 +63,7 @@ exports.aggiungiCommento = async (req, res) => {
 
 exports.ottieniCommenti = async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        const segnalazione = await Segnalazione.findOne({ id: req.params.idSegnalazione });
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
         }
