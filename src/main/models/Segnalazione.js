@@ -4,7 +4,7 @@ const feedbackSchema = new mongoose.Schema({
     id: Number,
     username: String,
     commento: String
-});
+}, { collection: 'feedbacks' });
 
 const segnalazioneSchema = new mongoose.Schema({
     id: Number,
@@ -17,7 +17,7 @@ const segnalazioneSchema = new mongoose.Schema({
 
 const Segnalazione = mongoose.model('Segnalazioni', segnalazioneSchema);
 
-const feedbacks = mongoose.model('feedbacks', feedbackSchema);
+const feedback = mongoose.model('feedbacks', feedbackSchema);
 
 module.exports = Segnalazione;
-module.exports = feedbacks;
+module.exports = feedback;
