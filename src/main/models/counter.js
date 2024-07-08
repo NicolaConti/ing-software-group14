@@ -1,21 +1,24 @@
 const mongoose = require('mongoose');
 
 const counterSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    value: { type: Number, default: 0 },
-}, {collection: "Counter"});
+    _id: { type: String, required: true },
+    seq: { type: Number, default: 0 },
+}, { collection: 'Counter' });
 
 const Counter = mongoose.model('Counter', counterSchema);
 
-async function getNextId(counterName) {
-    const result = await Counter.findOneAndUpdate(
-        { name: counterName },
-        { $inc: { value: 1 } },
-        { new: true, upsert: true }
-    );
-
-    return result.value;
+async function getNextSequence(name) {
+    try {
+        const counter = await Counter.findByIdAndUpdate(
+            { _id: name },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+        return counter.seq;
+    } catch (error) {
+        console.error('Error getting next sequence:', error);
+        throw error;
+    }
 }
 
-// Esporta la funzione getNextId
-module.exports = { getNextId };
+module.exports = Counter;

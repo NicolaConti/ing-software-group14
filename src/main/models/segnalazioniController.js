@@ -2,12 +2,17 @@ const Segnalazione = require('./Segnalazione');
 const Counter = require('./counter');
 
 async function getNextSequence(name) {
-    const counter = await Counter.findByIdAndUpdate(
-        { _id: name },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-    );
-    return counter.seq;
+    try {
+        const counter = await Counter.findByIdAndUpdate(
+            { _id: name },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+        return counter.seq;
+    } catch (error) {
+        console.error('Error getting next sequence:', error);
+        throw error;
+    }
 }
 
 exports.creaSegnalazione = async (req, res) => {
@@ -17,17 +22,16 @@ exports.creaSegnalazione = async (req, res) => {
 
         const nuovaSegnalazione = new Segnalazione({
             _id: nextId,
-            tipo: tipo,
-            commento: commento,
-            data: data,
-            coordinate: coordinate
+            tipo,
+            commento,
+            data,
+            coordinate
         });
 
         const segnalazioneSalvata = await nuovaSegnalazione.save();
-
         res.status(201).json(segnalazioneSalvata);
     } catch (error) {
-        console.error(error);
+        console.error('Errore durante la creazione della segnalazione:', error);
         res.status(500).json({ error: 'Errore durante la creazione della segnalazione' });
     }
 };
@@ -49,10 +53,9 @@ exports.aggiungiCommento = async (req, res) => {
         segnalazione.feedbacks.push(nuovoCommento);
 
         const segnalazioneAggiornata = await segnalazione.save();
-
         res.json(segnalazioneAggiornata);
     } catch (error) {
-        console.error(error);
+        console.error('Errore durante l\'aggiunta del commento:', error);
         res.status(500).json({ error: 'Errore durante l\'aggiunta del commento' });
     }
 };
@@ -65,7 +68,7 @@ exports.ottieniCommenti = async (req, res) => {
         }
         res.json(segnalazione.feedbacks);
     } catch (error) {
-        console.error(error);
+        console.error('Errore durante il recupero dei commenti:', error);
         res.status(500).json({ error: 'Errore durante il recupero dei commenti' });
     }
 };
