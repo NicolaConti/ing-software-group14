@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -13,6 +14,7 @@ let user;
 let admin;
 let segnalazione;
 let newLogin;
+let feedback;
 
 // Importa moduli per MongoDB
 const { getNextId } = require('../models/counter');
@@ -20,6 +22,7 @@ const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
+const Feedback= require('../models/feedbacks');
 
 // Middleware
 app.use(cors());
@@ -97,7 +100,6 @@ function getCurrentDateTime() {
 
     return `${year}/${month}/${day} @ ${hours}:${minutes}:${seconds}`;
 }
-
 
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
@@ -201,16 +203,17 @@ app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 });
 
 app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    const { commento } = req.body;
-    const username = user;  // Assuming 'user' is the currently logged-in user
+    const { commento, username } = req.body;
+    const segnalazioneId = req.params.id;
 
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
 
-        segnalazione.feedbacks.push({ username, commento });
+        const newId = await getNextId('feedbackId');
+        segnalazione.feedbacks.push({ id: newId, username, commento });
         await segnalazione.save();
 
         res.status(200).json({ message: 'Feedback aggiunto con successo' });
@@ -440,27 +443,6 @@ app.post('/close-segnalazione', async (req, res) => {
     } catch (err) {
         console.error("Error during close-segnalazione:", err);
         res.status(500).send('Internal server error');
-    }
-});
-
-app.post('/api/segnalazioni/:id/commento', async (req, res) => {
-    const { commento, username } = req.body;
-    const segnalazioneId = req.params.id;
-
-    try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-
-        const newId = await getNextId('feedbackId');
-        segnalazione.feedbacks.push({ id: newId, username, commento });
-        await segnalazione.save();
-
-        res.status(200).json({ message: 'Feedback aggiunto con successo' });
-    } catch (err) {
-        console.error("Errore durante l'aggiunta del feedback:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
     }
 });
 

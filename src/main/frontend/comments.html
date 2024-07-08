@@ -121,7 +121,7 @@
     const reportId = urlParams.get('reportId');
 
     function fetchComments() {
-        fetch(`/api/segnalazioni/${reportId}/commenti`)
+        fetch(`/api/segnalazioni/${reportId}/feedbacks`)
             .then(response => response.json())
             .then(data => {
                 const commentsDiv = document.getElementById('comments');
@@ -137,12 +137,12 @@
 
     function addComment() {
         const newComment = document.getElementById('newComment').value;
-        fetch(`/api/segnalazioni/${reportId}/commento`, {
+        fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ commento: newComment, username: 'user' })
+            body: JSON.stringify({ commento: newComment, username: 'user' }) // Aggiorna 'user' con il nome utente corrente
         }).then(response => response.json())
             .then(data => {
                 document.getElementById('newComment').value = '';

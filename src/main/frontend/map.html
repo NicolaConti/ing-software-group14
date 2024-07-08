@@ -167,14 +167,14 @@
 
         var dettagli =
             `<p>Tipo: ${tipo}</p>
-        <p>Commento: ${commento}</p>
-        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
+            <p>Commento: ${commento}</p>
+            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
 
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
         document.getElementById('commenti').innerHTML = '';
 
-        fetch(`/api/segnalazioni/${marker.getId()}/commenti`)
+        fetch(`/api/segnalazioni/${marker.getId()}/feedbacks`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
