@@ -8,7 +8,7 @@ const feedbackSchema = new Schema({
 }, { collection: 'feedbacks' });
 
 const segnalazioneSchema = new Schema({
-    id: { type: Number, unique: true }, // Aggiungi un campo separato per l'ID numerico
+    id: { type: Number, unique: true }, // Campo separato per l'ID numerico
     tipo: String,
     commento: String,
     data: Date,
