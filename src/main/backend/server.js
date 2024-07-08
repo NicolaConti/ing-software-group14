@@ -417,6 +417,16 @@ app.get('/fetch-segnalazioni', async (req, res) => {
     }
 });
 
+// Function to recalculate IDs
+async function recalculateIds() {
+    const segnalazioni = await Segnalazione.find().sort({ id: 1 }).exec();
+    for (let i = 0; i < segnalazioni.length; i++) {
+        segnalazioni[i].id = i + 1;
+        await segnalazioni[i].save();
+    }
+}
+
+// Route to delete a segnalazione and recalculate IDs
 app.post('/close-segnalazione', async (req, res) => {
     const id = req.body.id_segnalazione;
     try {
@@ -428,16 +438,14 @@ app.post('/close-segnalazione', async (req, res) => {
         console.log("Query result:", segnalazione);
 
         if (segnalazione) {
-            // User found
-            Segnalazione.deleteOne({id: segnalazione.id} ).exec().then(() => {
-                console.log("Segnalazione close updated successfully");
-            }).catch((err) => {
-                console.error("Error closing segnalazione: ", err);
-            });
+            await Segnalazione.deleteOne({id: segnalazione.id});
+            console.log("Segnalazione close updated successfully");
+
+            // Recalculate IDs
+            await recalculateIds();
 
             res.send('Closing segnalazione successful');
         } else {
-            // User not found or password incorrect, login failed
             res.status(401).send('Invalid ID');
         }
     } catch (err) {
@@ -445,6 +453,7 @@ app.post('/close-segnalazione', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));
