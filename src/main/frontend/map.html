@@ -39,6 +39,7 @@
     <select id="tipo">
         <option value="Problema Stradale">Problema Stradale</option>
         <option value="Rifiuti">Rifiuti</option>
+        <
         <option value="Incidente">Incidente</option>
         <option value="Altro">Altro</option>
     </select>
@@ -53,15 +54,11 @@
 <div id="commentModal">
     <div id="dettagliSegnalazione"></div>
     <div id="commenti"></div>
-    <!-- <button onclick="aggiungiCommento()">Aggiungi Commento</button> -->
-    <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
+    <label for="nuovoCommento">Aggiungi Commento:</label>
+    <textarea id="nuovoCommento"></textarea>
+    <button onclick="aggiungiCommento()">Aggiungi Commento</button>
     <button onclick="chiudiCommentModal()">Chiudi</button>
-    <button id="viewComments">View Comments</button>
 </div>
-
-<form id="login-form" action="/logout" method="post">
-    <button type="submit">Logout</button>
-</form>
 
 <script>
     var map = new ol.Map({
@@ -143,20 +140,24 @@
         document.getElementById('commentModal').style.display = 'none';
     }
 
-    function eliminaSegnalazione() {
-        if (selectedMarker) {
-            var id = selectedMarker.getId();
-            fetch(`/api/segnalazioni/${id}`, {
-                method: 'DELETE'
-            }).then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    markerLayer.getSource().removeFeature(selectedMarker);
-                    selectedMarker = null;
-                    document.getElementById('commentModal').style.display = 'none';
-                })
-                .catch(error => console.error('Errore:', error));
-        }
+    function aggiungiCommento() {
+        var commento = document.getElementById('nuovoCommento').value;
+        var username = 'utente'; // Qui puoi usare il nome utente effettivo
+        var markerId = selectedMarker.get('id'); // Usa l'ID del marker selezionato
+
+        fetch(`/api/segnalazioni/${markerId}/commento`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ commento, username })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Successo:', data);
+                chiudiCommentModal();
+            })
+            .catch(error => console.error('Errore:', error));
     }
 
     function mostraSegnalazione(marker) {
@@ -164,22 +165,23 @@
         var coordinate = marker.getGeometry().getCoordinates();
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
+        var markerId = marker.get('id'); // Aggiungi l'ID del marker
 
         var dettagli =
             `<p>Tipo: ${tipo}</p>
-        <p>Commento: ${commento}</p>
-        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
+            <p>Commento: ${commento}</p>
+            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>`;
 
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
         document.getElementById('commenti').innerHTML = '';
 
-        fetch(`/api/segnalazioni/${marker.get('id')}/feedbacks`)
+        fetch(`/api/segnalazioni/${markerId}/commenti`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
                 commenti.forEach(commento => {
                     var commentElement = document.createElement('p');
-                    commentElement.textContent = commento;
+                    commentElement.textContent = commento.commento;
                     commentiDiv.appendChild(commentElement);
                 });
             })
@@ -188,7 +190,7 @@
         document.getElementById('commentModal').style.display = 'block';
 
         document.getElementById('viewComments').onclick = function() {
-            window.location.href = `/comments.html?reportId=${marker.get('id')}`;
+            window.location.href = `/comments.html?reportId=${markerId}`;
         };
     }
 
@@ -205,7 +207,6 @@
             overlay.setPosition(coordinate);
         }
     });
-
 
     fetch('/api/segnalazioni')
         .then(response => response.json())
