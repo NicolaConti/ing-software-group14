@@ -121,21 +121,35 @@
     const reportId = urlParams.get('reportId');
 
     function fetchComments() {
+        if (!reportId) {
+            console.error('reportId è undefined');
+            return;
+        }
+
         fetch(`/api/segnalazioni/${reportId}/feedbacks`)
             .then(response => response.json())
             .then(data => {
                 const commentsDiv = document.getElementById('comments');
                 commentsDiv.innerHTML = '';
-                data.forEach(comment => {
-                    const commentElement = document.createElement('li');
-                    commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
-                    commentsDiv.appendChild(commentElement);
-                });
+                if (Array.isArray(data)) {
+                    data.forEach(comment => {
+                        const commentElement = document.createElement('li');
+                        commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
+                        commentsDiv.appendChild(commentElement);
+                    });
+                } else {
+                    console.error('Il formato dei dati è errato:', data);
+                }
             })
             .catch(error => console.error('Errore:', error));
     }
 
     function addComment() {
+        if (!reportId) {
+            console.error('reportId è undefined');
+            return;
+        }
+
         const newComment = document.getElementById('newComment').value;
         fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
             method: 'POST',
@@ -144,7 +158,7 @@
             },
             body: JSON.stringify({ commento: newComment, username: 'user' }) // Aggiorna 'user' con il nome utente corrente
         }).then(response => response.json())
-            .then(data => {
+            .then(() => {
                 document.getElementById('newComment').value = '';
                 fetchComments();
             })
