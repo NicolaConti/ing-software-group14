@@ -1,185 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commenti della Segnalazione</title>
+    <title>Feedback Segnalazione</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 10px;
-            padding: 0;
-            background-color: #4CAF50;
-        }
-
-        .comments-header {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        h2 {
-            text-align: center;
-            flex: 1;
-            margin: 0;
-            color: #8B4513;
-        }
-
-        .comments-container {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #4CAF50;
-        }
-
-        .section {
-            width: 100%;
-            max-width: 800px;
+            background-color: #f0f0f0;
             padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .feedback-section {
             background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            overflow: auto;
-            margin-bottom: 20px;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
+        .feedback {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
         }
-
-        label {
-            margin-bottom: 5px;
+        .feedback:last-child {
+            border-bottom: none;
+        }
+        .feedback-username {
             font-weight: bold;
         }
-
-        textarea {
+        .feedback-content {
+            margin-top: 5px;
+        }
+        .add-feedback {
+            margin-top: 20px;
+        }
+        .add-feedback input,
+        .add-feedback button {
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: vertical;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        .add-feedback input {
+            width: calc(100% - 22px);
+        }
+        .add-feedback button {
             width: 100%;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #8B4513;
-            color: white;
+            background-color: #007bff;
+            color: #fff;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-            align-self: flex-start;
         }
-
-        button:hover {
-            background-color: #6B3B0A;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+        .add-feedback button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-
-<div class="comments-header">
-    <h2>Commenti della Segnalazione</h2>
-    <button onclick="goBack()">Torna Indietro</button>
+<h1>Feedback della Segnalazione</h1>
+<div class="feedback-section" id="feedback-section">
+    <!-- I feedback verranno caricati qui -->
 </div>
-
-<div class="comments-container">
-    <div class="section" id="comments-section">
-        <h3>Commenti</h3>
-        <ul id="comments"></ul>
-    </div>
-
-    <div class="section" id="new-comment-section">
-        <h3>Aggiungi un nuovo commento</h3>
-        <div class="form-group">
-            <label for="newComment">Commento:</label>
-            <textarea id="newComment" rows="4" required></textarea>
-        </div>
-        <button onclick="addComment()">Aggiungi Commento</button>
-    </div>
+<div class="add-feedback">
+    <h2>Aggiungi un feedback</h2>
+    <textarea id="feedback-input" placeholder="Scrivi il tuo feedback qui..." rows="4" cols="50"></textarea><br>
+    <button onclick="submitFeedback()">Invia Feedback</button>
 </div>
 
 <script>
-    // Ottenere il reportId dai parametri dell'URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const reportId = urlParams.get('reportId');
+    let currentUser = null;
+    let segnalazioneId = new URLSearchParams(window.location.search).get('id');
 
-    console.log('Report ID:', reportId); // Debug: verifica che reportId sia corretto
+    // Funzione per caricare i feedback
+    async function loadFeedbacks() {
+        try {
+            const response = await fetch(`/api/segnalazioni/${segnalazioneId}/feedbacks`);
+            if (!response.ok) {
+                throw new Error('Errore nel recupero dei feedback');
+            }
+            const feedbacks = await response.json();
+            const feedbackSection = document.getElementById('feedback-section');
+            feedbackSection.innerHTML = '';
 
-    function fetchComments() {
-        if (!reportId) {
-            console.error('reportId è undefined');
+            feedbacks.forEach(feedback => {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'feedback';
+                feedbackDiv.innerHTML = `
+                        <div class="feedback-username">${feedback.username}</div>
+                        <div class="feedback-content">${feedback.feedback}</div>
+                    `;
+                feedbackSection.appendChild(feedbackDiv);
+            });
+        } catch (error) {
+            console.error('Errore:', error);
+        }
+    }
+
+    // Funzione per inviare un nuovo feedback
+    async function submitFeedback() {
+        const feedbackInput = document.getElementById('feedback-input').value;
+
+        if (!feedbackInput) {
+            alert('Il feedback non può essere vuoto');
             return;
         }
 
-        fetch(`/api/segnalazioni/${reportId}/feedbacks`)
-            .then(response => response.json())
-            .then(data => {
-                const commentsDiv = document.getElementById('comments');
-                commentsDiv.innerHTML = '';
-                if (Array.isArray(data)) {
-                    data.forEach(comment => {
-                        const commentElement = document.createElement('li');
-                        commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
-                        commentsDiv.appendChild(commentElement);
-                    });
-                } else {
-                    console.error('Il formato dei dati è errato:', data);
-                }
-            })
-            .catch(error => console.error('Errore:', error));
-    }
+        try {
+            const response = await fetch(`/api/segnalazioni/${segnalazioneId}/feedbacks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ feedback: feedbackInput, username: currentUser.username })
+            });
 
-    function addComment() {
-        if (!reportId) {
-            console.error('reportId è undefined');
-            return;
+            if (!response.ok) {
+                throw new Error('Errore nell\'invio del feedback');
+            }
+
+            document.getElementById('feedback-input').value = '';
+            loadFeedbacks();
+        } catch (error) {
+            console.error('Errore:', error);
         }
+    }
 
-        const newComment = document.getElementById('newComment').value;
-        const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
-        if (!currentUser) {
-            console.error('currentUser è undefined');
-            return;
+    // Funzione per ottenere l'utente corrente
+    async function getCurrentUser() {
+        try {
+            const response = await fetch('/api/currentUser');
+            if (!response.ok) {
+                throw new Error('Non autenticato');
+            }
+            currentUser = await response.json();
+            loadFeedbacks();
+        } catch (error) {
+            console.error('Errore:', error);
+            alert('Devi effettuare il login per visualizzare e aggiungere feedback');
+            window.location.href = 'login.html';
         }
-
-        fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: currentUser.username, commento: newComment }) // Use the actual username
-        }).then(response => response.json())
-            .then(() => {
-                document.getElementById('newComment').value = '';
-                fetchComments();
-            })
-            .catch(error => console.error('Errore:', error));
     }
 
-    function goBack() {
-        window.history.back();
-    }
-
-    window.onload = fetchComments;
+    getCurrentUser();
 </script>
-
 </body>
 </html>
