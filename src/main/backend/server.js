@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -21,7 +20,7 @@ const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
-const Feedback= require('../models/feedbacks');
+const Feedback= require('../models/Feedback');
 
 // Middleware
 app.use(cors());
