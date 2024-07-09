@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -188,8 +189,15 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 });
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
+    const segnalazioneId = Number(req.params.id);
+
+    // Verifica che l'ID della segnalazione sia un numero valido
+    if (isNaN(segnalazioneId)) {
+        return res.status(400).json({ message: 'ID della segnalazione non valido' });
+    }
+
     try {
-        const segnalazione = await Segnalazione.findOne({ id: Number(req.params.id) }).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -203,6 +211,11 @@ app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const { commento, username } = req.body;
     const segnalazioneId = Number(req.params.id);
+
+    // Verifica che l'ID della segnalazione sia un numero valido
+    if (isNaN(segnalazioneId)) {
+        return res.status(400).json({ message: 'ID della segnalazione non valido' });
+    }
 
     try {
         const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
