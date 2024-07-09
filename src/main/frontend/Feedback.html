@@ -123,62 +123,80 @@
 
     console.log('Report ID:', reportId); // Debug: verifica che reportId sia corretto
 
-    function fetchComments() {
+    async function fetchCurrentUser() {
+        try {
+            const response = await fetch('/api/currentUser');
+            if (!response.ok) throw new Error('Errore nel recuperare i dati dell\'utente');
+            const userData = await response.json();
+            window.currentUser = userData;
+        } catch (error) {
+            console.error('Errore:', error);
+        }
+    }
+
+    async function fetchComments() {
         if (!reportId) {
             console.error('reportId è undefined');
             return;
         }
 
-        fetch(`/api/segnalazioni/${reportId}/feedbacks`)
-            .then(response => response.json())
-            .then(data => {
-                const commentsDiv = document.getElementById('comments');
-                commentsDiv.innerHTML = '';
-                if (Array.isArray(data)) {
-                    data.forEach(comment => {
-                        const commentElement = document.createElement('li');
-                        commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
-                        commentsDiv.appendChild(commentElement);
-                    });
-                } else {
-                    console.error('Il formato dei dati è errato:', data);
-                }
-            })
-            .catch(error => console.error('Errore:', error));
+        try {
+            const response = await fetch(`/api/segnalazioni/${reportId}/feedbacks`);
+            const data = await response.json();
+            const commentsDiv = document.getElementById('comments');
+            commentsDiv.innerHTML = '';
+            if (Array.isArray(data)) {
+                data.forEach(comment => {
+                    const commentElement = document.createElement('li');
+                    commentElement.textContent = `Username: ${comment.username}, Commento: ${comment.commento}`;
+                    commentsDiv.appendChild(commentElement);
+                });
+            } else {
+                console.error('Il formato dei dati è errato:', data);
+            }
+        } catch (error) {
+            console.error('Errore:', error);
+        }
     }
 
-    function addComment() {
+    async function addComment() {
         if (!reportId) {
             console.error('reportId è undefined');
             return;
         }
 
         const newComment = document.getElementById('newComment').value;
-        const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
+        const currentUser = window.currentUser;
+
         if (!currentUser) {
             console.error('currentUser è undefined');
             return;
         }
 
-        fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: currentUser.username, commento: newComment }) // Use the actual username
-        }).then(response => response.json())
-            .then(() => {
-                document.getElementById('newComment').value = '';
-                fetchComments();
-            })
-            .catch(error => console.error('Errore:', error));
+        try {
+            const response = await fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: currentUser.username, commento: newComment })
+            });
+            if (!response.ok) throw new Error('Errore nel postare il commento');
+            document.getElementById('newComment').value = '';
+            fetchComments();
+        } catch (error) {
+            console.error('Errore:', error);
+        }
     }
 
     function goBack() {
         window.history.back();
     }
 
-    window.onload = fetchComments;
+    window.onload = async () => {
+        await fetchCurrentUser();
+        fetchComments();
+    };
 </script>
 
 </body>
