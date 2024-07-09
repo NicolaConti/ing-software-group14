@@ -101,7 +101,8 @@
         var marker = new ol.Feature({
             geometry: new ol.geom.Point(coordinate),
             tipo: tipo,
-            commento: commento
+            commento: commento,
+            idSegnalazione: null
         });
 
         var zoom = map.getView().getZoom();
@@ -129,7 +130,8 @@
             })
         }).then(response => response.json())
             .then(data => {
-                marker.setId(data.id);
+                //marker.setId(data.id);
+                marker.idSegnalazione = data.id;
                 console.log(data);
             })
             .catch(error => console.error('Errore:', error));
@@ -160,7 +162,7 @@
         document.getElementById('commenti').innerHTML = '';
 
         // Fetch e visualizza i commenti della segnalazione
-        fetch(`/api/segnalazioni/${marker.get('id')}/feedbacks`)
+        fetch(`/api/segnalazioni/${marker.idSegnalazione}/feedbacks`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
@@ -175,7 +177,7 @@
         document.getElementById('commentModal').style.display = 'block';
 
         document.getElementById('viewComments').onclick = function() {
-            window.location.href = `/Feedback.html?reportId=${marker.get('id')}`;
+            window.location.href = `/Feedback.html?reportId=${marker.idSegnalazione}`;
         };
     }
 
@@ -206,7 +208,8 @@
                     id: segnalazione.id
                 });
 
-                marker.setId(segnalazione.id);
+                //marker.setId(segnalazione.id);
+                marker.idSegnalazione = segnalazione.id;
 
                 var zoom = map.getView().getZoom();
                 var iconStyle = new ol.style.Style({

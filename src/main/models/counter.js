@@ -22,4 +22,4 @@ async function getNextSequence(name) {
 }
 
 module.exports = Counter;
-module.exports = getNextSequence;
+module.exports = getNextSequence();
