@@ -148,51 +148,25 @@
     }
 
     function addComment() {
-        const reportId = window.reportId; // Ensure reportId is defined in the global scope or passed as an argument.
         if (!reportId) {
-            console.error('reportId is undefined');
+            console.error('reportId è undefined');
             return;
         }
 
-        const newComment = document.getElementById('newComment').value.trim();
-        if (!newComment) {
-            console.error('Comment is empty');
-            return;
-        }
-
-        fetch('/api/getCurrentUser') // Endpoint to get the current user's details
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const currentUser = data.username;
-                if (!currentUser) {
-                    console.error('currentUser is undefined');
-                    return;
-                }
-
-                return fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: currentUser, commento: newComment })
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+        const newComment = document.getElementById('newComment').value;
+        //const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
+        fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: 'User', commento: newComment  }) // Aggiorna 'user' con il nome utente corrente
+        }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';
                 fetchComments();
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Errore:', error));
     }
 
     function goBack() {
