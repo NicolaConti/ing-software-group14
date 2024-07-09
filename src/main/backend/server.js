@@ -173,15 +173,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Route per ottenere il currentUser
-app.get('/api/currentUser', (req, res) => {
-    if (user) {
-        res.json({ username: user.username });
-    } else {
-        res.status(401).json({ message: 'Non autenticato' });
-    }
-});
-
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
     try {
