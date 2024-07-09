@@ -1,22 +1,13 @@
 const Segnalazione = require('./Segnalazione');
-const Counter = require('./counter');
-
-async function getNextSequence(name) {
-    const counter = await Counter.findByIdAndUpdate(
-        { _id: name },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-    );
-    return counter.seq;
-}
+const { getNextSequence } = require('../models/counter');
 
 exports.creaSegnalazione = async (req, res) => {
     try {
         const { tipo, commento, data, coordinate } = req.body;
-        const nextId = await getNextSequence('segnalazioneid');
+        const nextId = await getNextSequence('segnalazioneId');
 
         const nuovaSegnalazione = new Segnalazione({
-            _id: nextId,
+            id: nextId,
             tipo: tipo,
             commento: commento,
             data: data,
@@ -36,7 +27,7 @@ exports.creaSegnalazione = async (req, res) => {
 // Funzione per aggiungere un commento a una segnalazione esistente
 exports.aggiungiCommento = async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null);
 
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
@@ -62,7 +53,7 @@ exports.aggiungiCommento = async (req, res) => {
 // Funzione per ottenere i commenti di una segnalazione
 exports.ottieniCommenti = async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null);
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
         }
@@ -76,7 +67,7 @@ exports.ottieniCommenti = async (req, res) => {
 // Funzione per ottenere i feedback di una segnalazione
 exports.ottieniFeedbacks = async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.idSegnalazione);
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null);
         if (!segnalazione) {
             return res.status(404).json({ error: 'Segnalazione non trovata' });
         }

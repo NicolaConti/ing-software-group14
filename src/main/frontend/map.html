@@ -53,13 +53,10 @@
 <div id="commentModal">
     <div id="dettagliSegnalazione"></div>
     <div id="commenti"></div>
-    <br>
-    <label for="nuovoCommento">Aggiungi un commento:</label>
-    <textarea id="nuovoCommento"></textarea>
-    <br>
-    <button onclick="aggiungiCommento()">Aggiungi Commento</button>
-    <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button>
+    <!-- <button onclick="aggiungiCommento()">Aggiungi Commento</button> -->
+    <!-- <button onclick="eliminaSegnalazione()">Elimina Segnalazione</button> -->
     <button onclick="chiudiCommentModal()">Chiudi</button>
+    <button id="viewComments">View Comments</button>
 </div>
 
 <form id="login-form" action="/logout" method="post">
@@ -132,7 +129,7 @@
             })
         }).then(response => response.json())
             .then(data => {
-                marker.setId(data._id);
+                marker.setId(data.id);
                 console.log(data);
             })
             .catch(error => console.error('Errore:', error));
@@ -142,47 +139,8 @@
         document.getElementById('modal').style.display = 'none';
     }
 
-    function aggiungiCommento() {
-        var nuovoCommento = document.getElementById('nuovoCommento').value;
-        if (selectedMarker) {
-            var id = selectedMarker.getId();
-            fetch(`/api/segnalazioni/${id}/commento`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ commento: nuovoCommento, username: 'user' }) // Assumi che 'user' sia il nome utente corrente
-            }).then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    var commentiDiv = document.getElementById('commenti');
-                    var commentElement = document.createElement('p');
-                    commentElement.textContent = nuovoCommento;
-                    commentiDiv.appendChild(commentElement);
-                    document.getElementById('nuovoCommento').value = '';
-                })
-                .catch(error => console.error('Errore:', error));
-        }
-    }
-
     function chiudiCommentModal() {
         document.getElementById('commentModal').style.display = 'none';
-    }
-
-    function eliminaSegnalazione() {
-        if (selectedMarker) {
-            var id = selectedMarker.getId();
-            fetch(`/api/segnalazioni/${id}`, {
-                method: 'DELETE'
-            }).then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    markerLayer.getSource().removeFeature(selectedMarker);
-                    selectedMarker = null;
-                    document.getElementById('commentModal').style.display = 'none';
-                })
-                .catch(error => console.error('Errore:', error));
-        }
     }
 
     function mostraSegnalazione(marker) {
@@ -202,7 +160,7 @@
         document.getElementById('commenti').innerHTML = '';
 
         // Fetch e visualizza i commenti della segnalazione
-        fetch(`/api/segnalazioni/${marker.getId()}/commenti`)
+        fetch(`/api/segnalazioni/${marker.get('id')}/feedbacks`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
@@ -215,6 +173,10 @@
             .catch(error => console.error('Errore:', error));
 
         document.getElementById('commentModal').style.display = 'block';
+
+        document.getElementById('viewComments').onclick = function() {
+            window.location.href = `/Feedback.html?reportId=${marker.get('id')}`;
+        };
     }
 
     // Evento per aggiungere un nuovo marker
@@ -241,10 +203,10 @@
                     geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                     tipo: segnalazione.tipo,
                     commento: segnalazione.commento,
-                    id: segnalazione._id
+                    id: segnalazione.id
                 });
 
-                marker.setId(segnalazione._id);
+                marker.setId(segnalazione.id);
 
                 var zoom = map.getView().getZoom();
                 var iconStyle = new ol.style.Style({

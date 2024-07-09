@@ -15,7 +15,7 @@ let segnalazione;
 let newLogin;
 
 // Importa moduli per MongoDB
-const { getNextId } = require('../models/counter');
+const { getNextSequence } = require('../models/counter');
 const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
@@ -176,7 +176,7 @@ app.post('/login', async (req, res) => {
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -189,7 +189,7 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -205,7 +205,7 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const username = user;  // Assuming 'user' is the currently logged-in user
 
     try {
-        const segnalazione = await Segnalazione.findById(req.params.id).exec();
+        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -225,7 +225,7 @@ app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
 
     try {
-        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
+        const newId = await getNextSequence('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
 
         const newSegnalazione = new Segnalazione({
             id: newId, // Usa il nuovo ID generato
