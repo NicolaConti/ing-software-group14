@@ -154,13 +154,18 @@
         }
 
         const newComment = document.getElementById('newComment').value;
-        //const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
+        const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
+        if (!currentUser) {
+            console.error('currentUser è undefined');
+            return;
+        }
+
         fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: 'User', commento: newComment  }) // Aggiorna 'user' con il nome utente corrente
+            body: JSON.stringify({ username: currentUser.username, commento: newComment }) // Use the actual username
         }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';
