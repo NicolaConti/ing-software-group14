@@ -117,8 +117,11 @@
 </div>
 
 <script>
+    // Ottenere il reportId dai parametri dell'URL
     const urlParams = new URLSearchParams(window.location.search);
     const reportId = urlParams.get('reportId');
+
+    console.log('Report ID:', reportId); // Debug: verifica che reportId sia corretto
 
     function fetchComments() {
         if (!reportId) {
