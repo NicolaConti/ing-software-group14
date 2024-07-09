@@ -14,7 +14,6 @@ let user;
 let admin;
 let segnalazione;
 let newLogin;
-let feedback;
 
 // Importa moduli per MongoDB
 const { getNextId } = require('../models/counter');
@@ -191,7 +190,7 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findOne({ id: req.params.id }).exec();
+        const segnalazione = await Segnalazione.findOne({ id: Number(req.params.id) }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -204,7 +203,7 @@ app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 
 app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const { commento, username } = req.body;
-    const segnalazioneId = req.params.id;
+    const segnalazioneId = Number(req.params.id);
 
     try {
         const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
@@ -213,7 +212,11 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
         }
 
         const newId = await getNextId('feedbackId');
-        segnalazione.feedbacks.push({ id: newId, username, commento });
+
+        const newFeedback = new Feedback({ id: newId, username, commento });
+        await newFeedback.save();
+
+        segnalazione.feedbacks.push(newFeedback);
         await segnalazione.save();
 
         res.status(200).json({ message: 'Feedback aggiunto con successo' });
@@ -225,21 +228,15 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 
 // Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
+    const { titolo, descrizione, latitudine, longitudine, immagine, categoria } = req.body;
 
     try {
-        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
-
-        const newSegnalazione = new Segnalazione({
-            id: newId, // Usa il nuovo ID generato
-            tipo,
-            commento,
-            coordinate,
-            feedbacks: []
-        });
+        const newId = await getNextId('segnalazioneId');
+        const newSegnalazione = new Segnalazione({ id: newId, titolo, descrizione, latitudine, longitudine, immagine, categoria, feedbacks: [] });
 
         await newSegnalazione.save();
-        res.status(201).json(newSegnalazione);
+
+        res.status(200).json({ message: 'Segnalazione creata con successo' });
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
         res.status(500).json({ message: 'Errore interno del server' });
