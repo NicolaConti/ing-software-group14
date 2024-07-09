@@ -188,15 +188,8 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 });
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    const segnalazioneId = Number(req.params.id);
-
-    // Verifica che l'ID della segnalazione sia un numero valido
-    if (isNaN(segnalazioneId)) {
-        return res.status(400).json({ message: 'ID della segnalazione non valido' });
-    }
-
     try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
+        const segnalazione = await Segnalazione.findOne({ id: Number(req.params.id) }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -210,11 +203,6 @@ app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const { commento, username } = req.body;
     const segnalazioneId = Number(req.params.id);
-
-    // Verifica che l'ID della segnalazione sia un numero valido
-    if (isNaN(segnalazioneId)) {
-        return res.status(400).json({ message: 'ID della segnalazione non valido' });
-    }
 
     try {
         const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
@@ -239,21 +227,15 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 
 // Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
+    const { titolo, descrizione, latitudine, longitudine, immagine, categoria } = req.body;
 
     try {
-        const newId = await getNextId('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
-
-        const newSegnalazione = new Segnalazione({
-            id: newId, // Usa il nuovo ID generato
-            tipo,
-            commento,
-            coordinate,
-            feedbacks: []
-        });
+        const newId = await getNextId('segnalazioneId');
+        const newSegnalazione = new Segnalazione({ id: newId, titolo, descrizione, latitudine, longitudine, immagine, categoria, feedbacks: [] });
 
         await newSegnalazione.save();
-        res.status(201).json(newSegnalazione);
+
+        res.status(200).json({ message: 'Segnalazione creata con successo' });
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
         res.status(500).json({ message: 'Errore interno del server' });
