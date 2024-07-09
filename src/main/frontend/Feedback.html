@@ -154,12 +154,13 @@
         }
 
         const newComment = document.getElementById('newComment').value;
+        const currentUser = document.getElementsByName('currentUser'); // Function to get the current username
         fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: 'user', commento: newComment  }) // Aggiorna 'user' con il nome utente corrente
+            body: JSON.stringify({ username: currentUser, commento: newComment  }) // Aggiorna 'user' con il nome utente corrente
         }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';
