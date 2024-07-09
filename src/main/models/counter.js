@@ -10,7 +10,7 @@ const Counter = mongoose.model('Counter', counterSchema);
 async function getNextSequence(name) {
     try {
         const counter = await Counter.findByIdAndUpdate(
-            { _id: name },
+            { name: name },
             { $inc: { seq: 1 } },
             { new: true, upsert: true }
         );
@@ -22,3 +22,4 @@ async function getNextSequence(name) {
 }
 
 module.exports = Counter;
+module.exports = getNextSequence;

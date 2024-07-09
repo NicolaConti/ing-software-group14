@@ -1,20 +1,6 @@
 const Segnalazione = require('./Segnalazione');
 const Counter = require('./counter');
 
-async function getNextSequence(name) {
-    try {
-        const counter = await Counter.findByIdAndUpdate(
-            { _id: name },
-            { $inc: { seq: 1 } },
-            { new: true, upsert: true }
-        );
-        return counter.seq;
-    } catch (error) {
-        console.error('Error getting next sequence:', error);
-        throw error;
-    }
-}
-
 exports.creaSegnalazione = async (req, res) => {
     try {
         const { tipo, commento, data, coordinate } = req.body;
