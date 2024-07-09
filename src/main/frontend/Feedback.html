@@ -159,7 +159,7 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ commento: newComment, username: 'user' }) // Aggiorna 'user' con il nome utente corrente
+            body: JSON.stringify({ username: 'user', commento: newComment  }) // Aggiorna 'user' con il nome utente corrente
         }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';

@@ -187,39 +187,6 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
     }
 });
 
-app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    try {
-        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-        res.status(200).json(segnalazione.feedbacks);
-    } catch (err) {
-        console.error("Errore durante il recupero dei feedback:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
-
-app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
-    const { commento } = req.body;
-    const username = user;  // Assuming 'user' is the currently logged-in user
-
-    try {
-        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione non trovata' });
-        }
-
-        segnalazione.feedbacks.push({ username, commento });
-        await segnalazione.save();
-
-        res.status(200).json({ message: 'Feedback aggiunto con successo' });
-    } catch (err) {
-        console.error("Errore durante l'aggiunta del feedback:", err);
-        res.status(500).json({ message: 'Errore interno del server' });
-    }
-});
-
 // Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
@@ -239,6 +206,53 @@ app.post('/api/segnalazioni', async (req, res) => {
         res.status(201).json(newSegnalazione);
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
+        res.status(500).json({ message: 'Errore interno del server' });
+    }
+});
+
+app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
+    const segnalazioneId = Number(req.params.id);
+
+    // Verifica che l'ID della segnalazione sia un numero valido
+    if (isNaN(segnalazioneId)) {
+        return res.status(400).json({ message: 'ID della segnalazione non valido' });
+    }
+
+    try {
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).json({ message: 'Segnalazione non trovata' });
+        }
+        res.status(200).json(segnalazione.feedbacks);
+    } catch (err) {
+        console.error("Errore durante il recupero dei feedback:", err);
+        res.status(500).json({ message: 'Errore interno del server' });
+    }
+});
+
+app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
+    const { username, commento } = req.body;
+    const segnalazioneId = Number(req.params.id);
+
+    // Verifica che l'ID della segnalazione sia un numero valido
+    if (isNaN(segnalazioneId)) {
+        return res.status(400).json({ message: 'ID della segnalazione non valido' });
+    }
+
+    try {
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).json({ message: 'Segnalazione non trovata' });
+        }
+
+        const newFeedback = { username, commento };
+
+        segnalazione.feedbacks.push(newFeedback);
+        await segnalazione.save();
+
+        res.status(200).json({ message: 'Feedback aggiunto con successo' });
+    } catch (err) {
+        console.error("Errore durante l'aggiunta del feedback:", err);
         res.status(500).json({ message: 'Errore interno del server' });
     }
 });
