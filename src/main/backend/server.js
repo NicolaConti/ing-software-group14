@@ -191,7 +191,7 @@ app.get('/api/username', (req, res) => {
     }
 });
 
-// Protecting segnalazioni and feedback routes with authMiddleware
+// Apply authMiddleware to all /api/segnalazioni routes
 app.use('/api/segnalazioni', authMiddleware);
 
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
