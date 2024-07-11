@@ -442,6 +442,22 @@ app.get('/comments', async (req, res) => {
     }
 });
 
+app.get('/api/current-user', async (req, res) => {
+    const userId = req.session.userId; // Adjust this according to your authentication logic
+
+    try {
+        const user = await RegUser.findById(userId).exec();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ username: user.username });
+    } catch (err) {
+        console.error("Error fetching user:", err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));
 });
