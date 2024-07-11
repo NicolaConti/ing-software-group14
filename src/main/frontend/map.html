@@ -93,6 +93,8 @@
         return 0.05 + (zoom - 13) * 0.005; // Scala iniziale ridotta
     }
 
+    let currentUser;
+    if (currentUser) {
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
@@ -234,6 +236,7 @@
             feature.setStyle(iconStyle);
         });
     });
+    }
 </script>
 </body>
 </html>
