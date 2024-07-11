@@ -6,7 +6,7 @@ const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo'); // Import connect-mongo
 const routes = require('../routes/routes');
-const authMiddleware = require('../models/authMiddleware'); // Import the authentication middleware
+//const authMiddleware = require('../models/authMiddleware'); // Import the authentication middleware
 
 
 const app = express();
@@ -198,7 +198,7 @@ app.get('/api/username', (req, res) => {
 });
 
 // Apply authMiddleware to all /api/segnalazioni routes
-app.use('/api/segnalazioni', authMiddleware);
+//app.use('/api/segnalazioni', authMiddleware);
 
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
@@ -217,6 +217,11 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 // Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
+
+    // Check if the user is authenticated
+    if (!req.session.username) {
+        return res.status(401).json({ message: 'Not authorized' });
+    }
 
     try {
         const newId = await getNextSequence('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
