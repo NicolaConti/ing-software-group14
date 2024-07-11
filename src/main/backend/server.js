@@ -6,6 +6,8 @@ const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo'); // Import connect-mongo
 const routes = require('../routes/routes');
+const authMiddleware = require('../models/authMiddleware'); // Import the authentication middleware
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -188,6 +190,9 @@ app.get('/api/username', (req, res) => {
         res.status(401).json({ message: 'Not logged in' });
     }
 });
+
+// Protecting segnalazioni and feedback routes with authMiddleware
+app.use('/api/segnalazioni', authMiddleware);
 
 // Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
