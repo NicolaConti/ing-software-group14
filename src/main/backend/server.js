@@ -5,11 +5,14 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const routes = require('../routes/routes');
-//const usernameMiddleware = require('../models/username'); // Import the middleware
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
+let user;
+let admin;
+let segnalazione;
+let newLogin;
 
 // Importa moduli per MongoDB
 const { getNextSequence } = require('../models/counter');
@@ -95,6 +98,7 @@ function getCurrentDateTime() {
     return `${year}/${month}/${day} @ ${hours}:${minutes}:${seconds}`;
 }
 
+
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
     const { username, password, email } = req.body;
@@ -143,17 +147,16 @@ app.post('/login', async (req, res) => {
     try {
         console.log("Attempting login with:", username, password);
 
-        const user = await RegUser.findOne({ username, password }).exec();
+        user = await RegUser.findOne({ username, password }).exec();
 
         console.log("Query result:", user);
         if (user) {
             const dateTime = getCurrentDateTime();
-            const newLogin = new LoginHistory();
+            newLogin = new LoginHistory();
             newLogin.username = username;
             newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
-            req.session.userId = user._id;
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
                 console.log("User " + user.username + " auth updated successfully (login)");
                 res.status(200).json({ redirect: 'map.html' });
@@ -256,51 +259,64 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 
 // Route per il logout
 app.post('/logout', async (req, res) => {
-    const username = req.username; // Use the username from the middleware
-    if (username) {
-        await RegUser.updateOne({username}, {$set: {auth: "0"}}).exec().then(() => {
+    if(user){
+        await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
             res.redirect('login.html');
             console.log("Logout Successful");
-            console.log("User " + username + " auth updated successfully (logout)");
+            console.log("User " + user.username + " auth updated successfully (logout)");
         }).catch((err) => {
-            console.error("Error updating user " + username + " auth (logout): ", err);
+            console.error("Error updating user " + user.username + " auth (logout): ", err);
         });
-    } else {
+    }
+    else{
         res.redirect('login.html');
         console.log("Guest user redirect successful");
     }
+
 });
 
 app.post('/admin-login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     try {
+        // Log the incoming username and password
         console.log("Attempting login with:", username, password);
 
-        const admin = await Admin.findOne({ username, password }).exec();
+        let query = Admin.findOne();
+        query.where('username', username);
+        query.where('password', password);
 
+        admin = await query.exec();
+
+        // Log the result of the query (for debugging)
         console.log("Query result:", admin);
         if (admin) {
-            await Admin.updateOne({ username }, { $set: { auth: "1" } }).exec();
-            console.log("Admin " + username + " auth updated successfully (login)");
+            // User found, login successful
+
+            Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec().then(() => {
+                console.log("Admin " + admin.username + " auth updated successfully (login)");
+            }).catch((err) => {
+                console.error("Error updating Admin " + admin.username + " auth (login): ", err);
+            });
+
             res.status(200).json({ redirect: 'admin-dashboard.html' });
         } else {
+            // User not found or password incorrect, login failed
             res.status(401).send('Invalid username or password');
         }
     } catch (err) {
-        console.error("Error during login:", err);
+        console.error("Error during logout:", err);
         res.status(500).send('Internal server error');
     }
 });
 
 app.post('/admin-logout', async (req, res) => {
-    const username = req.username; // Use the username from the middleware
-    await Admin.updateOne({ username }, { $set: { auth: "0" } }).exec().then(() => {
+    await Admin.updateOne({username: admin.username}, {$set: {auth: "0"}}).exec().then(() => {
         console.log("Logout Successful");
-        console.log("Admin " + username + " auth updated successfully (logout)");
+        console.log("Admin " + admin.username + " auth updated successfully (logout)");
         res.redirect('login.html');
     }).catch((err) => {
-        console.error("Error updating admin " + username + " auth (logout): ", err);
+        console.error("Error updating admin " + admin.username + " auth (logout): ", err);
     });
 });
 
@@ -332,18 +348,25 @@ app.post('/suspend-user', async (req, res) => {
     const username = req.body.username;
     try {
         console.log("Attempting to suspend:", username);
-        const user = await RegUser.findOne({ username }).exec();
+        let query = RegUser.findOne();
+        query.where('username', username);
+
+        user = await query.exec();
         console.log("Query result:", user);
 
         if (user) {
+            // User found
             if (user.suspended === "1") {
                 return res.status(400).send('User is already suspended');
             }
 
-            await RegUser.updateOne({ username }, { $set: { suspended: "1" } });
+            // Update the user's suspended status to "1"
+            await RegUser.updateOne({ username: user.username }, { $set: { suspended: "1" } });
             console.log("User suspended successfully");
+
             res.send('Suspend successful');
         } else {
+            // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
@@ -354,7 +377,7 @@ app.post('/suspend-user', async (req, res) => {
 
 app.get('/fetch-suspended', async (req, res) => {
     try {
-        const RegUsers = await RegUser.find({ suspended: "1" }).exec();
+        const RegUsers = await RegUser.find({suspended: "1"}, null, null ).exec();
         const result = RegUsers.map(history => `${history.username}`);
         console.log('Processed Result:', result); // Log processed result
         res.json(result);
@@ -368,17 +391,23 @@ app.post('/unsuspend-user', async (req, res) => {
     const username = req.body.username;
     try {
         console.log("Attempting to suspend:", username);
-        const user = await RegUser.findOne({ username }).exec();
+        let query = RegUser.findOne();
+        query.where('username', username);
+
+        user = await query.exec();
         console.log("Query result:", user);
 
         if (user) {
-            await RegUser.updateOne({ username }, { $set: { suspended: "0" } }).exec().then(() => {
+            // User found
+            RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec().then(() => {
                 console.log("User unsuspended updated successfully");
             }).catch((err) => {
                 console.error("Error updating user unsuspended: ", err);
             });
+
             res.send('Unsuspend successful');
         } else {
+            // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
@@ -403,17 +432,23 @@ app.post('/close-segnalazione', async (req, res) => {
     const id = req.body.id_segnalazione;
     try {
         console.log("Attempting to close:", id);
-        const segnalazione = await Segnalazione.findOne({ id: Number(id) }).exec();
+        let query = Segnalazione.findOne();
+        query.where('id', Number(id));
+
+        segnalazione = await query.exec();
         console.log("Query result:", segnalazione);
 
         if (segnalazione) {
-            await Segnalazione.deleteOne({ id: segnalazione.id }).exec().then(() => {
+            // User found
+            Segnalazione.deleteOne({id: segnalazione.id} ).exec().then(() => {
                 console.log("Segnalazione close updated successfully");
             }).catch((err) => {
                 console.error("Error closing segnalazione: ", err);
             });
+
             res.send('Closing segnalazione successful');
         } else {
+            // User not found or password incorrect, login failed
             res.status(401).send('Invalid ID');
         }
     } catch (err) {
@@ -421,39 +456,6 @@ app.post('/close-segnalazione', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
-// Render comments page and pass username
-app.get('/comments', async (req, res) => {
-    // Assume the user is authenticated and their ID is stored in the session
-    const userId = req.session.userId; // Adjust this according to your authentication logic
-
-    try {
-        const user = await RegUser.findById(userId).exec();
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-        res.render('comments', { username: user.username });
-    } catch (err) {
-        console.error("Error fetching user:", err);
-        res.status(500).send('Internal server error');
-    }
-});
-
-app.get('/api/current-user', async (req, res) => {
-    const userId = req.session.userId; // Adjust this according to your authentication logic
-
-    try {
-        const user = await RegUser.findById(userId).exec();
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.json({ username: user.username });
-    } catch (err) {
-        console.error("Error fetching user:", err);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));

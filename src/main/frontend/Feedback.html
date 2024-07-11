@@ -117,20 +117,14 @@
 </div>
 
 <script>
-    let currentUser = ''; // Variable to hold the current username
+    // Inject the username from the server-side
+    const currentUser = "<%= username %>"; // Replace with the actual username from the server
 
     // Ottenere il reportId dai parametri dell'URL
     const urlParams = new URLSearchParams(window.location.search);
     const reportId = urlParams.get('reportId');
 
-    function fetchCurrentUser() {
-        fetch('/api/current-user')
-            .then(response => response.json())
-            .then(data => {
-                currentUser = data.username;
-            })
-            .catch(error => console.error('Errore fetching current user:', error));
-    }
+    console.log('Report ID:', reportId); // Debug: verifica che reportId sia corretto
 
     function fetchComments() {
         if (!reportId) {
@@ -163,13 +157,17 @@
         }
 
         const newComment = document.getElementById('newComment').value;
+        if (!currentUser) {
+            console.error('currentUser è undefined');
+            return;
+        }
 
         fetch(`/api/segnalazioni/${reportId}/feedbacks`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: currentUser, commento: newComment })
+            body: JSON.stringify({ username: currentUser, commento: newComment }) // Use the actual username
         }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';
@@ -182,10 +180,7 @@
         window.history.back();
     }
 
-    window.onload = () => {
-        fetchCurrentUser();
-        fetchComments();
-    };
+    window.onload = fetchComments;
 </script>
 
 </body>
