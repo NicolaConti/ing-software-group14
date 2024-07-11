@@ -5,7 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const routes = require('../routes/routes');
-const usernameMiddleware = require('../models/username'); // Import the middleware
+//const usernameMiddleware = require('../models/username'); // Import the middleware
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,10 +30,6 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
     }
 }));
 app.use('/api', routes);
-app.use(usernameMiddleware); // Use the middleware
-
-// Set EJS as the template engine
-app.set('view engine', 'ejs');
 
 // Connect to MongoDB
 mongoose.connect(url, {
@@ -157,6 +153,7 @@ app.post('/login', async (req, res) => {
             newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
+            req.session.userId = user._id;
             RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
                 console.log("User " + user.username + " auth updated successfully (login)");
                 res.status(200).json({ redirect: 'map.html' });
