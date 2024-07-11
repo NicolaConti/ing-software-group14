@@ -168,6 +168,7 @@ app.post('/login', async (req, res) => {
         console.log("Query result:", user);
         if (user) {
             req.session.username = user.username; // Store username in session
+            console.log("Session after login:", req.session);
             const dateTime = getCurrentDateTime();
             const newLogin = new LoginHistory();
             newLogin.username = username;
