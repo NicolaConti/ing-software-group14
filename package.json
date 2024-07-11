@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-flash": "^0.0.2",
+    "express-session": "^1.18.0",
     "mongodb": "^6.6.2",
     "mongoose": "^8.4.1",
     "omit-undefined": "^1.0.1"

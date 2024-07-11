@@ -4,15 +4,12 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const session = require('express-session'); // Add this line
 const routes = require('../routes/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
-let user;
-let admin;
-let segnalazione;
-let newLogin;
 
 // Importa moduli per MongoDB
 const { getNextSequence } = require('../models/counter');
@@ -33,6 +30,14 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
     }
 }));
 app.use('/api', routes);
+
+// Session setup
+app.use(session({
+    secret: 'your-secret-key', // replace with your own secret key
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if you're using HTTPS
+}));
 
 // Connect to MongoDB
 mongoose.connect(url, {
@@ -98,7 +103,6 @@ function getCurrentDateTime() {
     return `${year}/${month}/${day} @ ${hours}:${minutes}:${seconds}`;
 }
 
-
 // Route for user registration
 app.post('/SignIn', async (req, res) => {
     const { username, password, email } = req.body;
@@ -147,22 +151,20 @@ app.post('/login', async (req, res) => {
     try {
         console.log("Attempting login with:", username, password);
 
-        user = await RegUser.findOne({ username, password }).exec();
+        const user = await RegUser.findOne({ username, password }).exec();
 
         console.log("Query result:", user);
         if (user) {
+            req.session.username = user.username; // Store username in session
             const dateTime = getCurrentDateTime();
-            newLogin = new LoginHistory();
+            const newLogin = new LoginHistory();
             newLogin.username = username;
             newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
-            RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec().then(() => {
-                console.log("User " + user.username + " auth updated successfully (login)");
-                res.status(200).json({ redirect: 'map.html' });
-            }).catch((err) => {
-                console.error("Error updating user " + user.username + " auth (login): ", err);
-            });
+            await RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec();
+            console.log("User " + user.username + " auth updated successfully (login)");
+            res.status(200).json({ redirect: 'map.html' });
         } else {
             console.log("Login failed");
             res.status(401).json({ message: 'wrong username or password' });
@@ -170,6 +172,15 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error("Error during login:", err);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Route to retrieve the current user's username
+app.get('/api/username', (req, res) => {
+    if (req.session.username) {
+        res.status(200).json({ username: req.session.username });
+    } else {
+        res.status(401).json({ message: 'Not logged in' });
     }
 });
 
@@ -259,13 +270,14 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 
 // Route per il logout
 app.post('/logout', async (req, res) => {
-    if(user){
-        await RegUser.updateOne({username: user.username}, {$set: {auth: "0"}}).exec().then(() => {
+    if(req.session.username){
+        await RegUser.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
             res.redirect('login.html');
             console.log("Logout Successful");
-            console.log("User " + user.username + " auth updated successfully (logout)");
+            console.log("User " + req.session.username + " auth updated successfully (logout)");
+            req.session.destroy(); // Destroy the session
         }).catch((err) => {
-            console.error("Error updating user " + user.username + " auth (logout): ", err);
+            console.error("Error updating user " + req.session.username + " auth (logout): ", err);
         });
     }
     else{
@@ -286,38 +298,39 @@ app.post('/admin-login', async (req, res) => {
         query.where('username', username);
         query.where('password', password);
 
-        admin = await query.exec();
+        const admin = await query.exec();
 
         // Log the result of the query (for debugging)
         console.log("Query result:", admin);
         if (admin) {
             // User found, login successful
-
-            Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec().then(() => {
-                console.log("Admin " + admin.username + " auth updated successfully (login)");
-            }).catch((err) => {
-                console.error("Error updating Admin " + admin.username + " auth (login): ", err);
-            });
-
+            req.session.username = admin.username; // Store username in session
+            await Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec();
+            console.log("Admin " + admin.username + " auth updated successfully (login)");
             res.status(200).json({ redirect: 'admin-dashboard.html' });
         } else {
             // User not found or password incorrect, login failed
             res.status(401).send('Invalid username or password');
         }
     } catch (err) {
-        console.error("Error during logout:", err);
+        console.error("Error during login:", err);
         res.status(500).send('Internal server error');
     }
 });
 
 app.post('/admin-logout', async (req, res) => {
-    await Admin.updateOne({username: admin.username}, {$set: {auth: "0"}}).exec().then(() => {
-        console.log("Logout Successful");
-        console.log("Admin " + admin.username + " auth updated successfully (logout)");
+    if(req.session.username){
+        await Admin.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
+            console.log("Logout Successful");
+            console.log("Admin " + req.session.username + " auth updated successfully (logout)");
+            req.session.destroy(); // Destroy the session
+            res.redirect('login.html');
+        }).catch((err) => {
+            console.error("Error updating admin " + req.session.username + " auth (logout): ", err);
+        });
+    } else {
         res.redirect('login.html');
-    }).catch((err) => {
-        console.error("Error updating admin " + admin.username + " auth (logout): ", err);
-    });
+    }
 });
 
 app.get('/login-history', async (req, res) => {
@@ -351,7 +364,7 @@ app.post('/suspend-user', async (req, res) => {
         let query = RegUser.findOne();
         query.where('username', username);
 
-        user = await query.exec();
+        const user = await query.exec();
         console.log("Query result:", user);
 
         if (user) {
@@ -390,28 +403,24 @@ app.get('/fetch-suspended', async (req, res) => {
 app.post('/unsuspend-user', async (req, res) => {
     const username = req.body.username;
     try {
-        console.log("Attempting to suspend:", username);
+        console.log("Attempting to unsuspend:", username);
         let query = RegUser.findOne();
         query.where('username', username);
 
-        user = await query.exec();
+        const user = await query.exec();
         console.log("Query result:", user);
 
         if (user) {
             // User found
-            RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec().then(() => {
-                console.log("User unsuspended updated successfully");
-            }).catch((err) => {
-                console.error("Error updating user unsuspended: ", err);
-            });
-
+            await RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec();
+            console.log("User unsuspended updated successfully");
             res.send('Unsuspend successful');
         } else {
             // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
-        console.error("Error during login:", err);
+        console.error("Error during unsuspend:", err);
         res.status(500).send('Internal server error');
     }
 });
@@ -435,20 +444,14 @@ app.post('/close-segnalazione', async (req, res) => {
         let query = Segnalazione.findOne();
         query.where('id', Number(id));
 
-        segnalazione = await query.exec();
+        const segnalazione = await query.exec();
         console.log("Query result:", segnalazione);
 
         if (segnalazione) {
-            // User found
-            Segnalazione.deleteOne({id: segnalazione.id} ).exec().then(() => {
-                console.log("Segnalazione close updated successfully");
-            }).catch((err) => {
-                console.error("Error closing segnalazione: ", err);
-            });
-
+            await Segnalazione.deleteOne({id: segnalazione.id} ).exec();
+            console.log("Segnalazione close updated successfully");
             res.send('Closing segnalazione successful');
         } else {
-            // User not found or password incorrect, login failed
             res.status(401).send('Invalid ID');
         }
     } catch (err) {

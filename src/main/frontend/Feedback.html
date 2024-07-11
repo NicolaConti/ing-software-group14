@@ -117,8 +117,19 @@
 </div>
 
 <script>
-    // Inject the username from the server-side
-    const currentUser = "<%= username %>"; // Replace with the actual username from the server
+    let currentUser;
+
+    // Fetch the current username from the server
+    fetch('/api/username')
+        .then(response => response.json())
+        .then(data => {
+            currentUser = data.username;
+            console.log('Current User:', currentUser); // Debug: verify that username is fetched correctly
+        })
+        .catch(error => {
+            console.error('Error fetching username:', error);
+            // Handle the error, maybe redirect to login if not authenticated
+        });
 
     // Ottenere il reportId dai parametri dell'URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -167,8 +178,13 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: currentUser, commento: newComment }) // Use the actual username
-        }).then(response => response.json())
+            body: JSON.stringify({ username: currentUser, commento: newComment })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Errore nella risposta del server');
+            }
+            return response.json();
+        })
             .then(() => {
                 document.getElementById('newComment').value = '';
                 fetchComments();
