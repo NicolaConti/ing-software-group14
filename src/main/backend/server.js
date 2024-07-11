@@ -53,7 +53,7 @@ mongoose.connect(url, {
 app.use(session({
     secret: 'mySecretKey', // replace with your own secret key
     resave: false,
-    saveUninitialized: false, // change to false to avoid saving empty sessions
+    saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: url,
         collectionName: 'sessions',
@@ -65,6 +65,11 @@ app.use(session({
         maxAge: 14 * 24 * 60 * 60 * 1000 // cookie expiration (14 days)
     }
 }));
+
+app.use((req, res, next) => {
+    console.log("Session Data:", req.session);
+    next();
+});
 
 // Serve static files
 app.get('/', (req, res) => {
