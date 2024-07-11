@@ -1,8 +1,11 @@
 // authMiddleware.js
-module.exports = function(req, res, next) {
-    if (req.session && req.session.username) {
-        return next(); // User is authenticated, proceed to the next middleware/route handler
+module.exports = (req, res, next) => {
+    console.log("AuthMiddleware - Session:", req.session);
+    if (req.session.username) {
+        console.log("User authenticated:", req.session.username);
+        next();
     } else {
-        return res.status(401).json({ message: 'Not authorized' }); // User is not authenticated
+        console.log("User not authenticated");
+        res.status(401).json({ message: 'Not authorized' });
     }
 };
