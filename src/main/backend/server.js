@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const fs = require('fs');
+//const fs = require('fs');
 const session = require('express-session'); // Add this line
 const routes = require('../routes/routes');
 
@@ -132,22 +132,6 @@ app.post('/SignIn', async (req, res) => {
 
         const newUser = new RegUser({ username, password, email, auth: "0", suspended: "0" });
         await newUser.save();
-
-        // Funzione per registrare un utente
-        function registerUser(username, email) {
-            const filePath = path.join(__dirname, '../frontend/registered_users.txt');
-            const registrationData = `${new Date().toISOString()} - REGISTER - Username: ${username}, Email: ${email}\n`;
-
-            fs.appendFile(filePath, registrationData, (err) => {
-                if (err) {
-                    console.error('Error registering user:', err);
-                } else {
-                    console.log('User registered successfully.');
-                }
-            });
-        }
-
-        registerUser(username, email);
 
         // Send success response
         res.status(200).json({ redirect: 'map.html' });
