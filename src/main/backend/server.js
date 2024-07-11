@@ -32,6 +32,9 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
 app.use('/api', routes);
 app.use(usernameMiddleware); // Use the middleware
 
+// Set EJS as the template engine
+app.set('view engine', 'ejs');
+
 // Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
@@ -72,6 +75,12 @@ app.get('/recovery', (req, res) => {
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin-login.html'));
 });
+
+app.get('/comments', (req, res) => {
+    const username = req.username; // Assume username is set by middleware
+    res.render('comments', { username });
+});
+
 
 // Utility functions to validate email and password formats
 function validateEmail(email) {
