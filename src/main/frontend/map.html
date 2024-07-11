@@ -93,50 +93,63 @@
         return 0.05 + (zoom - 13) * 0.005; // Scala iniziale ridotta
     }
 
-    let currentUser;
-    if (currentUser) {
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
 
-        var marker = new ol.Feature({
-            geometry: new ol.geom.Point(coordinate),
-            tipo: tipo,
-            commento: commento,
-            idSegnalazione: null
-        });
-
-        var zoom = map.getView().getZoom();
-        var iconStyle = new ol.style.Style({
-            image: new ol.style.Icon({
-                src: 'marker-icon.png',
-                scale: getMarkerScale(zoom)
+        // Check if user is authenticated
+        fetch('/api/username')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('User not authenticated');
+                }
+                return response.json();
             })
-        });
-
-        marker.setStyle(iconStyle);
-        markerLayer.getSource().addFeature(marker);
-
-        document.getElementById('modal').style.display = 'none';
-
-        fetch('/api/segnalazioni', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tipo: tipo,
-                commento: commento,
-                coordinate: ol.proj.toLonLat(coordinate)
-            })
-        }).then(response => response.json())
             .then(data => {
-                //marker.setId(data.id);
-                marker.idSegnalazione = data.id;
-                console.log(data);
+                // User is authenticated, proceed with creating segnalazione
+                var marker = new ol.Feature({
+                    geometry: new ol.geom.Point(coordinate),
+                    tipo: tipo,
+                    commento: commento,
+                    idSegnalazione: null
+                });
+
+                var zoom = map.getView().getZoom();
+                var iconStyle = new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: 'marker-icon.png',
+                        scale: getMarkerScale(zoom)
+                    })
+                });
+
+                marker.setStyle(iconStyle);
+                markerLayer.getSource().addFeature(marker);
+
+                document.getElementById('modal').style.display = 'none';
+
+                fetch('/api/segnalazioni', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tipo: tipo,
+                        commento: commento,
+                        coordinate: ol.proj.toLonLat(coordinate)
+                    })
+                }).then(response => response.json())
+                    .then(data => {
+                        marker.idSegnalazione = data.id;
+                        console.log('Segnalazione created:', data);
+                    })
+                    .catch(error => console.error('Errore:', error));
             })
-            .catch(error => console.error('Errore:', error));
+            .catch(error => {
+                console.error('Authentication error:', error);
+                // Handle unauthorized access (e.g., show a message to the user)
+                alert('You need to log in to create a segnalazione.');
+            });
     }
 
     function chiudiModal() {
@@ -236,7 +249,6 @@
             feature.setStyle(iconStyle);
         });
     });
-    }
 </script>
 </body>
 </html>
