@@ -213,11 +213,6 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
 
-    // Check if the user is authenticated
-    if (!req.session.username) {
-        return res.status(401).json({ message: 'Not authorized' });
-    }else{
-
     try {
         const newId = await getNextSequence('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
 
@@ -234,7 +229,6 @@ app.post('/api/segnalazioni', async (req, res) => {
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
         res.status(500).json({ message: 'Errore interno del server' });
-    }
     }
 });
 
