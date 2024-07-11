@@ -76,12 +76,6 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin-login.html'));
 });
 
-app.get('/comments', (req, res) => {
-    const username = req.username; // Assume username is set by middleware
-    res.render('comments', { username });
-});
-
-
 // Utility functions to validate email and password formats
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -427,6 +421,23 @@ app.post('/close-segnalazione', async (req, res) => {
         }
     } catch (err) {
         console.error("Error during close-segnalazione:", err);
+        res.status(500).send('Internal server error');
+    }
+});
+
+// Render comments page and pass username
+app.get('/comments', async (req, res) => {
+    // Assume the user is authenticated and their ID is stored in the session
+    const userId = req.session.userId; // Adjust this according to your authentication logic
+
+    try {
+        const user = await RegUser.findById(userId).exec();
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        res.render('comments', { username: user.username });
+    } catch (err) {
+        console.error("Error fetching user:", err);
         res.status(500).send('Internal server error');
     }
 });
