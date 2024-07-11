@@ -117,6 +117,9 @@
 </div>
 
 <script>
+    // Inject the username from the server-side
+    const currentUser = "<%= username %>"; // Replace with the actual username from the server
+
     // Ottenere il reportId dai parametri dell'URL
     const urlParams = new URLSearchParams(window.location.search);
     const reportId = urlParams.get('reportId');
@@ -154,7 +157,6 @@
         }
 
         const newComment = document.getElementById('newComment').value;
-        const currentUser = window.currentUser; // Assuming currentUser is set globally by the server
         if (!currentUser) {
             console.error('currentUser è undefined');
             return;
@@ -165,7 +167,7 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: currentUser.username, commento: newComment }) // Use the actual username
+            body: JSON.stringify({ username: currentUser, commento: newComment }) // Use the actual username
         }).then(response => response.json())
             .then(() => {
                 document.getElementById('newComment').value = '';
