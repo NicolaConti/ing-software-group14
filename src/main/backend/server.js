@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-//const fs = require('fs');
-const session = require('express-session'); // Add this line
+const session = require('express-session');
+const MongoStore = require('connect-mongo'); // Import connect-mongo
 const routes = require('../routes/routes');
 
 const app = express();
@@ -31,14 +31,6 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
 }));
 app.use('/api', routes);
 
-// Session setup
-app.use(session({
-    secret: 'your-secret-key', // replace with your own secret key
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if you're using HTTPS
-}));
-
 // Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
@@ -54,6 +46,23 @@ mongoose.connect(url, {
     .catch((err) => {
         console.error("Error connecting to MongoDB:", err);
     });
+
+// Session setup with MongoStore
+app.use(session({
+    secret: 'mySecretKey', // replace with your own secret key
+    resave: false,
+    saveUninitialized: false, // change to false to avoid saving empty sessions
+    store: MongoStore.create({
+        mongoUrl: url,
+        collectionName: 'sessions',
+        ttl: 14 * 24 * 60 * 60, // session expiration in seconds (14 days)
+        autoRemove: 'native', // auto-remove expired sessions
+    }),
+    cookie: {
+        secure: false, // Set to true if you're using HTTPS
+        maxAge: 14 * 24 * 60 * 60 * 1000 // cookie expiration (14 days)
+    }
+}));
 
 // Serve static files
 app.get('/', (req, res) => {
