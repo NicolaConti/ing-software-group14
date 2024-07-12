@@ -52,7 +52,7 @@
 
 <div id="commentModal">
     <div id="dettagliSegnalazione"></div>
-    <div id="commenti"></div>
+
     <button onclick="chiudiCommentModal()">Chiudi</button>
     <button id="viewComments">View Comments</button>
 </div>
@@ -175,20 +175,6 @@
         <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
     `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
-
-        document.getElementById('commenti').innerHTML = '';
-
-        fetch(`/api/segnalazioni/${idSegnalazione}/feedbacks`)
-            .then(response => response.json())
-            .then(commenti => {
-                var commentiDiv = document.getElementById('commenti');
-                commenti.forEach(commento => {
-                    var commentElement = document.createElement('p');
-                    commentElement.textContent = commento;
-                    commentiDiv.appendChild(commentElement);
-                });
-            })
-            .catch(error => console.error('Errore:', error));
 
         document.getElementById('commentModal').style.display = 'block';
 
