@@ -220,12 +220,6 @@
         });
     }
 
-    // Call filterMarkers initially to apply any default filter
-    window.onload = function() {
-        loadMarkers();
-        filterMarkers();
-    };
-
     // Modify the loadMarkers function to ensure gravity is set on each marker
     function loadMarkers() {
         console.log('Loading markers...');
@@ -289,6 +283,12 @@
     });
 
     map.getView().on('change:resolution', updateMarkerScale);
+
+    // Call filterMarkers initially to apply any default filter
+    window.onload = function() {
+        loadMarkers();
+        filterMarkers();
+    };
 </script>
 </body>
 </html>
