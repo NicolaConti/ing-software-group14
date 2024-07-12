@@ -43,6 +43,13 @@
         <option value="Altro">Altro</option>
     </select>
     <br>
+    <label for="intensita">Livello di Intensità:</label>
+    <select id="intensita">
+        <option value="Bassa">Bassa</option>
+        <option value="Media">Media</option>
+        <option value="Alta">Alta</option>
+    </select>
+    <br>
     <label for="commento">Commento:</label>
     <textarea id="commento"></textarea>
     <br>
@@ -93,6 +100,7 @@
 
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
+        var intensita = document.getElementById('intensita').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
 
@@ -111,6 +119,7 @@
                     },
                     body: JSON.stringify({
                         tipo: tipo,
+                        intensita: intensita,
                         commento: commento,
                         coordinate: ol.proj.toLonLat(coordinate)
                     })
@@ -120,6 +129,7 @@
                         var marker = new ol.Feature({
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
+                            intensita: intensita,
                             commento: commento,
                             idSegnalazione: data.id
                         });
@@ -157,6 +167,7 @@
         selectedMarker = marker;
         var coordinate = marker.getGeometry().getCoordinates();
         var tipo = marker.get('tipo');
+        var intensita = marker.get('intensita');
         var commento = marker.get('commento');
         var idSegnalazione = marker.get('idSegnalazione');
 
@@ -167,6 +178,7 @@
 
         var dettagli = `
         <p>Tipo: ${tipo}</p>
+        <p>Intensità: ${intensita}</p>
         <p>Commento: ${commento}</p>
         <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
     `;
@@ -206,6 +218,7 @@
                     var marker = new ol.Feature({
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
+                        intensita: segnalazione.intensita,
                         commento: segnalazione.commento,
                         idSegnalazione: segnalazione.id
                     });
