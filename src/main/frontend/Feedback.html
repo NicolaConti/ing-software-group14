@@ -170,6 +170,7 @@
         const newComment = document.getElementById('newComment').value;
         if (!currentUser) {
             console.error('currentUser è undefined');
+            alert('You need to log in to comment a segnalazione.');
             return;
         }
 
