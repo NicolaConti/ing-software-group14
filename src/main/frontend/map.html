@@ -88,7 +88,7 @@
     var selectedMarker = null;
 
     function getMarkerScale(zoom) {
-        return 0.05 + (zoom - 13) * 0.005; // Scala iniziale ridotta
+        return 0.05 + (zoom - 13) * 0.005;
     }
 
     function aggiungiSegnalazione() {
@@ -190,18 +190,23 @@
     }
 
     function loadMarkers() {
+        console.log('Loading markers...');
         fetch('/api/segnalazioni')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch segnalazioni');
+                }
+                return response.json();
+            })
             .then(data => {
                 data.forEach(segnalazione => {
+                    console.log('Adding segnalazione:', segnalazione);
                     var marker = new ol.Feature({
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
                         commento: segnalazione.commento,
-                        id: segnalazione.id
+                        idSegnalazione: segnalazione.id
                     });
-
-                    marker.idSegnalazione = segnalazione.id;
 
                     var zoom = map.getView().getZoom();
                     var iconStyle = new ol.style.Style({
