@@ -209,6 +209,16 @@ app.get('/api/segnalazioni/:id', async (req, res) => {
     }
 });
 
+app.get('/api/segnalazioni', async (req, res) => {
+    try {
+        const segnalazioni = await Segnalazione.find();
+        res.status(200).json(segnalazioni);
+    } catch (err) {
+        console.error("Errore durante il recupero delle segnalazioni:", err);
+        res.status(500).json({ message: 'Errore interno del server' });
+    }
+});
+
 // Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
@@ -225,7 +235,7 @@ app.post('/api/segnalazioni', async (req, res) => {
         });
 
         await newSegnalazione.save();
-        res.status(200).json(newSegnalazione);
+        res.status(201).json(newSegnalazione);
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
         res.status(500).json({ message: 'Errore interno del server' });
