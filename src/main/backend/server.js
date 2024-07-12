@@ -18,6 +18,8 @@ const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
 
+let id_segnalazione;
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -469,6 +471,39 @@ app.post('/close-segnalazione', async (req, res) => {
     } catch (err) {
         console.error("Error during close-segnalazione:", err);
         res.status(500).send('Internal server error');
+    }
+});
+
+app.post('/fetch-commenti', async (req, res) => {
+    try {
+        id_segnalazione = req.body.id_segnalaz;
+        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).send('Segnalazione not found');
+        }
+        const result = segnalazione.feedbacks.map(feedback => `${feedback.username}, ${feedback.commento}`);
+        console.log('Processed Result:', result); // Log processed result
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/delete-commento', async (req, res) => {
+    try{
+        const id_commento = req.body.id_commento;
+        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).send('Segnalazione not found');
+        }
+        segnalazione.feedbacks.splice(id_commento+1, 1);
+        await segnalazione.save();
+        res.sendStatus(200);
+    }
+    catch(error){
+        console.error('Error deleting commento:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
