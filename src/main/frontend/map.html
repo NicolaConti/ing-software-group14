@@ -96,6 +96,7 @@
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
 
+        // Check if user is authenticated
         fetch('/api/username')
             .then(response => {
                 if (!response.ok) {
@@ -104,6 +105,7 @@
                 return response.json();
             })
             .then(data => {
+                // User is authenticated, proceed with creating segnalazione
                 var marker = new ol.Feature({
                     geometry: new ol.geom.Point(coordinate),
                     tipo: tipo,
@@ -143,6 +145,7 @@
             })
             .catch(error => {
                 console.error('Authentication error:', error);
+                // Handle unauthorized access
                 alert('You need to log in to create a segnalazione.');
             });
     }
