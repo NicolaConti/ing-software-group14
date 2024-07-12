@@ -29,21 +29,19 @@
             max-height: 400px;
             overflow-y: auto;
         }
-        #logout-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-        }
     </style>
 </head>
 <body>
-<div id="logout-container">
-    <form id="login-form" action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
-    <button id="filter-button" onclick="toggleFilterModal()">Filtra</button>
-</div>
+<!-- Filter Dropdown -->
+<label for="filterGravity">Filtra per Gravità:</label>
+<select id="filterGravity" onchange="filterMarkers()">
+    <option value="0">Tutti</option>
+    <option value="1">1 - Bassa</option>
+    <option value="2">2 - Moderata</option>
+    <option value="3">3 - Alta</option>
+    <option value="4">4 - Molto Alta</option>
+    <option value="5">5 - Massima</option>
+</select>
 
 <div id="map" class="map"></div>
 
@@ -79,19 +77,9 @@
     <button id="viewComments">View Comments</button>
 </div>
 
-<div id="filterModal" style="display:none; position: absolute; top: 50px; right: 50px; background-color: white; padding: 20px; border: 1px solid black; z-index: 1000;">
-    <label for="filterGravity">Filtra per Gravità:</label>
-    <select id="filterGravity" onchange="filterMarkers()">
-        <option value="0">Tutti</option>
-        <option value="1">1 - Bassa</option>
-        <option value="2">2 - Moderata</option>
-        <option value="3">3 - Alta</option>
-        <option value="4">4 - Molto Alta</option>
-        <option value="5">5 - Massima</option>
-    </select>
-    <br>
-    <button onclick="chiudiFilterModal()">Chiudi</button>
-</div>
+<form id="login-form" action="/logout" method="post">
+    <button type="submit">Logout</button>
+</form>
 
 <script>
     var map = new ol.Map({
@@ -129,6 +117,7 @@
         var coordinate = overlay.getPosition();
         var gravity = parseInt(document.getElementById('gravity').value, 10);
 
+        // Check if the user is authenticated
         fetch('/api/username')
             .then(response => {
                 if (!response.ok) {
@@ -137,6 +126,7 @@
                 return response.json();
             })
             .then(data => {
+                // User is authenticated, proceed with adding segnalazione
                 fetch('/api/segnalazioni', {
                     method: 'POST',
                     headers: {
@@ -151,12 +141,13 @@
                 })
                     .then(response => response.json())
                     .then(data => {
+                        // Create and add the marker only after successful POST request
                         var marker = new ol.Feature({
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
                             commento: commento,
                             idSegnalazione: data.id,
-                            gravity: gravity
+                            gravity: gravity // Ensure gravity is set
                         });
 
                         var zoom = map.getView().getZoom();
@@ -186,12 +177,6 @@
         var coordinate = marker.getGeometry().getCoordinates();
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
-        var idSegnalazione = marker.get('idSegnalazione');
-
-        if (!idSegnalazione) {
-            console.error('idSegnalazione is undefined');
-            return;
-        }
 
         var dettagli = `
             <p>Tipo: ${tipo}</p>
@@ -202,7 +187,7 @@
 
         document.getElementById('commenti').innerHTML = '';
 
-        fetch(`/api/segnalazioni/${idSegnalazione}/feedbacks`)
+        fetch(`/api/segnalazioni/${marker.idSegnalazione}/feedbacks`)
             .then(response => response.json())
             .then(commenti => {
                 var commentiDiv = document.getElementById('commenti');
@@ -217,7 +202,7 @@
         document.getElementById('commentModal').style.display = 'block';
 
         document.getElementById('viewComments').onclick = function() {
-            window.location.href = `/Feedback.html?reportId=${idSegnalazione}`;
+            window.location.href = `/Feedback.html?reportId=${marker.idSegnalazione}`;
         };
     }
 
@@ -228,35 +213,22 @@
         source.getFeatures().forEach(function(feature) {
             var featureGravity = feature.get('gravity');
             if (selectedGravity === 0 || featureGravity === selectedGravity) {
-                feature.setStyle(null);
+                feature.setStyle(null); // Reset to default style
             } else {
-                feature.setStyle(new ol.style.Style(null));
+                feature.setStyle(new ol.style.Style(null)); // Hide marker by setting an empty style
             }
         });
     }
 
-    function toggleFilterModal() {
-        var filterModal = document.getElementById('filterModal');
-        if (filterModal.style.display === 'none' || filterModal.style.display === '') {
-            filterModal.style.display = 'block';
-        } else {
-            filterModal.style.display = 'none';
-        }
-    }
+    // Call filterMarkers initially to apply any default filter
+    window.onload = function() {
+        loadMarkers();
+        filterMarkers();
+    };
 
-    function chiudiModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
-
-    function chiudiCommentModal() {
-        document.getElementById('commentModal').style.display = 'none';
-    }
-
-    function chiudiFilterModal() {
-        document.getElementById('filterModal').style.display = 'none';
-    }
-
+    // Modify the loadMarkers function to ensure gravity is set on each marker
     function loadMarkers() {
+        console.log('Loading markers...');
         fetch('/api/segnalazioni')
             .then(response => {
                 if (!response.ok) {
@@ -265,13 +237,15 @@
                 return response.json();
             })
             .then(data => {
+                console.log('Fetched segnalazioni:', data);
                 data.forEach(segnalazione => {
+                    console.log('Adding segnalazione:', segnalazione);
                     var marker = new ol.Feature({
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
                         commento: segnalazione.commento,
                         idSegnalazione: segnalazione.id,
-                        gravity: segnalazione.gravity
+                        gravity: segnalazione.gravity // Ensure gravity is set
                     });
 
                     var zoom = map.getView().getZoom();
@@ -292,10 +266,29 @@
             });
     }
 
-    window.onload = function() {
-        loadMarkers();
-        filterMarkers();
-    };
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function chiudiCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+    }
+
+    map.on('singleclick', function(event) {
+        var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
+        });
+
+        if (feature) {
+            mostraSegnalazione(feature);
+        } else {
+            var coordinate = event.coordinate;
+            document.getElementById('modal').style.display = 'block';
+            overlay.setPosition(coordinate);
+        }
+    });
+
+    map.getView().on('change:resolution', updateMarkerScale);
 </script>
 </body>
 </html>
