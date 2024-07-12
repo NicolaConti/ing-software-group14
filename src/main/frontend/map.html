@@ -32,6 +32,17 @@
     </style>
 </head>
 <body>
+<!-- Filter Dropdown -->
+<label for="filterGravity">Filtra per Gravità:</label>
+<select id="filterGravity" onchange="filterMarkers()">
+    <option value="0">Tutti</option>
+    <option value="1">1 - Bassa</option>
+    <option value="2">2 - Moderata</option>
+    <option value="3">3 - Alta</option>
+    <option value="4">4 - Molto Alta</option>
+    <option value="5">5 - Massima</option>
+</select>
+
 <div id="map" class="map"></div>
 
 <div id="modal">
@@ -41,6 +52,15 @@
         <option value="Rifiuti">Rifiuti</option>
         <option value="Incidente">Incidente</option>
         <option value="Altro">Altro</option>
+    </select>
+    <br>
+    <label for="gravity">Gravità:</label>
+    <select id="gravity">
+        <option value="1">1 - Bassa</option>
+        <option value="2">2 - Moderata</option>
+        <option value="3">3 - Alta</option>
+        <option value="4">4 - Molto Alta</option>
+        <option value="5">5 - Massima</option>
     </select>
     <br>
     <label for="commento">Commento:</label>
@@ -95,6 +115,7 @@
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
+        var gravity = parseInt(document.getElementById('gravity').value, 10);
 
         // Check if the user is authenticated
         fetch('/api/username')
@@ -114,7 +135,8 @@
                     body: JSON.stringify({
                         tipo: tipo,
                         commento: commento,
-                        coordinate: ol.proj.toLonLat(coordinate)
+                        coordinate: ol.proj.toLonLat(coordinate),
+                        gravity: gravity
                     })
                 })
                     .then(response => response.json())
@@ -124,7 +146,8 @@
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
                             commento: commento,
-                            idSegnalazione: data.id // Ensure idSegnalazione is set
+                            idSegnalazione: data.id,
+                            gravity: gravity // Ensure gravity is set
                         });
 
                         var zoom = map.getView().getZoom();
@@ -235,6 +258,20 @@
             });
     }
 
+    function filterMarkers() {
+        var selectedGravity = parseInt(document.getElementById('filterGravity').value, 10);
+        var source = markerLayer.getSource();
+
+        source.getFeatures().forEach(function(feature) {
+            var featureGravity = feature.get('gravity');
+            if (selectedGravity === 0 || featureGravity === selectedGravity) {
+                feature.setStyle(null); // Reset to default style
+            } else {
+                feature.setStyle(new ol.style.Style(null)); // Hide marker by setting an empty style
+            }
+        });
+    }
+
     function updateMarkerScale() {
         var zoom = map.getView().getZoom();
         markerLayer.getSource().getFeatures().forEach(function(feature) {
@@ -260,7 +297,11 @@
 
     map.getView().on('change:resolution', updateMarkerScale);
 
-    window.onload = loadMarkers;
+    // Call filterMarkers initially to apply any default filter
+    window.onload = function() {
+        loadMarkers();
+        filterMarkers();
+    };
 </script>
 </body>
 </html>

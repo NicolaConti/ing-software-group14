@@ -6,6 +6,7 @@ const segnalazioneSchema = new mongoose.Schema({
     commento: String,
     data: Date,
     coordinate: [Number],
+    gravity: Number, // 1 to 5
     feedbacks: [{
         username: String,
         commento: String
