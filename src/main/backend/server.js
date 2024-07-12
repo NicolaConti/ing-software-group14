@@ -226,6 +226,8 @@ app.post('/api/segnalazioni', async (req, res) => {
 
         await newSegnalazione.save();
         res.status(201).json(newSegnalazione);
+        const segnalazioni = await Segnalazione.find();
+        res.status(200).json(segnalazioni);
     } catch (err) {
         console.error("Errore durante la creazione della segnalazione:", err);
         res.status(500).json({ message: 'Errore interno del server' });
