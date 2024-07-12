@@ -5,7 +5,6 @@ const regUserSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
-    auth: String,
     suspended: String
 }, { collection: 'RegisteredUser' });
 

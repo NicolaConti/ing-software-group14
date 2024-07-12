@@ -144,11 +144,11 @@ app.post('/SignIn', async (req, res) => {
             return res.status(400).json({ message: 'email already taken' });
         }
 
-        const newUser = new RegUser({ username, password, email, auth: "0", suspended: "0" });
+        const newUser = new RegUser({ username, password, email, suspended: "0" });
         await newUser.save();
 
         // Send success response
-        res.status(200).json({ redirect: 'map.html' });
+        res.status(200).json({ message: "Sign In successful" ,redirect: 'login.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });
@@ -173,8 +173,6 @@ app.post('/login', async (req, res) => {
             newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
-            await RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec();
-            console.log("User " + user.username + " auth updated successfully (login)");
             res.status(200).json({ redirect: 'map.html' });
         } else {
             console.log("Login failed");
@@ -292,14 +290,10 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 // Route per il logout
 app.post('/logout', async (req, res) => {
     if(req.session.username){
-        await RegUser.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
-            res.redirect('login.html');
-            console.log("Logout Successful");
-            console.log("User " + req.session.username + " auth updated successfully (logout)");
-            req.session.destroy(); // Destroy the session
-        }).catch((err) => {
-            console.error("Error updating user " + req.session.username + " auth (logout): ", err);
-        });
+        res.redirect('login.html');
+        console.log("Logout Successful");
+        console.log("User " + req.session.username + " logout successful");
+        req.session.destroy(); // Destroy the session
     }
     else{
         res.redirect('login.html');
@@ -326,8 +320,7 @@ app.post('/admin-login', async (req, res) => {
         if (admin) {
             // User found, login successful
             req.session.username = admin.username; // Store username in session
-            await Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec();
-            console.log("Admin " + admin.username + " auth updated successfully (login)");
+            console.log("Admin " + admin.username + " logged in correctly");
             res.status(200).json({ redirect: 'admin-dashboard.html' });
         } else {
             // User not found or password incorrect, login failed
@@ -341,16 +334,14 @@ app.post('/admin-login', async (req, res) => {
 
 app.post('/admin-logout', async (req, res) => {
     if(req.session.username){
-        await Admin.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
-            console.log("Logout Successful");
-            console.log("Admin " + req.session.username + " auth updated successfully (logout)");
-            req.session.destroy(); // Destroy the session
-            res.redirect('login.html');
-        }).catch((err) => {
-            console.error("Error updating admin " + req.session.username + " auth (logout): ", err);
-        });
+        console.log("Logout Successful");
+        console.log("Admin " + req.session.username + " logout successful");
+        req.session.destroy(); // Destroy the session
+        res.redirect('login.html');
     } else {
         res.redirect('login.html');
+        console.log("Logout not correctly executed, check logs");
+        //default redirect
     }
 });
 
