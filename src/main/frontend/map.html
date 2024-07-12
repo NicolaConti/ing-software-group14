@@ -29,9 +29,22 @@
             max-height: 400px;
             overflow-y: auto;
         }
+        #logout-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+<div id="logout-container">
+    <form id="login-form" action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <button id="filter-button" onclick="toggleFilterModal()">Filtra</button>
+</div>
+
 <div id="map" class="map"></div>
 
 <div id="modal">
@@ -43,13 +56,13 @@
         <option value="Altro">Altro</option>
     </select>
     <br>
-    <label for="intensita">Livello di Intensità:</label>
-    <select id="intensita">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
+    <label for="gravity">Gravità:</label>
+    <select id="gravity">
+        <option value="1">1 - Bassa</option>
+        <option value="2">2 - Moderata</option>
+        <option value="3">3 - Alta</option>
+        <option value="4">4 - Molto Alta</option>
+        <option value="5">5 - Massima</option>
     </select>
     <br>
     <label for="commento">Commento:</label>
@@ -66,9 +79,19 @@
     <button id="viewComments">View Comments</button>
 </div>
 
-<form id="login-form" action="/logout" method="post">
-    <button type="submit">Logout</button>
-</form>
+<div id="filterModal" style="display:none; position: absolute; top: 50px; right: 50px; background-color: white; padding: 20px; border: 1px solid black; z-index: 1000;">
+    <label for="filterGravity">Filtra per Gravità:</label>
+    <select id="filterGravity" onchange="filterMarkers()">
+        <option value="0">Tutti</option>
+        <option value="1">1 - Bassa</option>
+        <option value="2">2 - Moderata</option>
+        <option value="3">3 - Alta</option>
+        <option value="4">4 - Molto Alta</option>
+        <option value="5">5 - Massima</option>
+    </select>
+    <br>
+    <button onclick="chiudiFilterModal()">Chiudi</button>
+</div>
 
 <script>
     var map = new ol.Map({
@@ -85,7 +108,7 @@
     });
 
     var overlay = new ol.Overlay({
-        element: document.getElementById('modal')
+        element: document.getElementById('overlay')
     });
     map.addOverlay(overlay);
 
@@ -102,9 +125,9 @@
 
     function aggiungiSegnalazione() {
         var tipo = document.getElementById('tipo').value;
-        var intensita = document.getElementById('intensita').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
+        var gravity = parseInt(document.getElementById('gravity').value, 10);
 
         fetch('/api/username')
             .then(response => {
@@ -121,9 +144,9 @@
                     },
                     body: JSON.stringify({
                         tipo: tipo,
-                        intensita: intensita,
                         commento: commento,
-                        coordinate: ol.proj.toLonLat(coordinate)
+                        coordinate: ol.proj.toLonLat(coordinate),
+                        gravity: gravity
                     })
                 })
                     .then(response => response.json())
@@ -131,9 +154,9 @@
                         var marker = new ol.Feature({
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
-                            intensita: intensita,
                             commento: commento,
-                            idSegnalazione: data.id
+                            idSegnalazione: data.id,
+                            gravity: gravity
                         });
 
                         var zoom = map.getView().getZoom();
@@ -148,6 +171,7 @@
                         markerLayer.getSource().addFeature(marker);
 
                         document.getElementById('modal').style.display = 'none';
+                        console.log('Segnalazione created:', data);
                     })
                     .catch(error => console.error('Errore:', error));
             })
@@ -157,19 +181,10 @@
             });
     }
 
-    function chiudiModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
-
-    function chiudiCommentModal() {
-        document.getElementById('commentModal').style.display = 'none';
-    }
-
     function mostraSegnalazione(marker) {
         selectedMarker = marker;
         var coordinate = marker.getGeometry().getCoordinates();
         var tipo = marker.get('tipo');
-        var intensita = marker.get('intensita');
         var commento = marker.get('commento');
         var idSegnalazione = marker.get('idSegnalazione');
 
@@ -179,11 +194,10 @@
         }
 
         var dettagli = `
-        <p>Tipo: ${tipo}</p>
-        <p>Intensità: ${intensita}</p>
-        <p>Commento: ${commento}</p>
-        <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
-    `;
+            <p>Tipo: ${tipo}</p>
+            <p>Commento: ${commento}</p>
+            <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
+            `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
         document.getElementById('commenti').innerHTML = '';
@@ -207,6 +221,41 @@
         };
     }
 
+    function filterMarkers() {
+        var selectedGravity = parseInt(document.getElementById('filterGravity').value, 10);
+        var source = markerLayer.getSource();
+
+        source.getFeatures().forEach(function(feature) {
+            var featureGravity = feature.get('gravity');
+            if (selectedGravity === 0 || featureGravity === selectedGravity) {
+                feature.setStyle(null);
+            } else {
+                feature.setStyle(new ol.style.Style(null));
+            }
+        });
+    }
+
+    function toggleFilterModal() {
+        var filterModal = document.getElementById('filterModal');
+        if (filterModal.style.display === 'none' || filterModal.style.display === '') {
+            filterModal.style.display = 'block';
+        } else {
+            filterModal.style.display = 'none';
+        }
+    }
+
+    function chiudiModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function chiudiCommentModal() {
+        document.getElementById('commentModal').style.display = 'none';
+    }
+
+    function chiudiFilterModal() {
+        document.getElementById('filterModal').style.display = 'none';
+    }
+
     function loadMarkers() {
         fetch('/api/segnalazioni')
             .then(response => {
@@ -220,9 +269,9 @@
                     var marker = new ol.Feature({
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
-                        intensita: segnalazione.intensita,
                         commento: segnalazione.commento,
-                        idSegnalazione: segnalazione.id
+                        idSegnalazione: segnalazione.id,
+                        gravity: segnalazione.gravity
                     });
 
                     var zoom = map.getView().getZoom();
@@ -243,32 +292,10 @@
             });
     }
 
-    function updateMarkerScale() {
-        var zoom = map.getView().getZoom();
-        markerLayer.getSource().getFeatures().forEach(function(feature) {
-            var iconStyle = feature.getStyle();
-            iconStyle.getImage().setScale(getMarkerScale(zoom));
-            feature.setStyle(iconStyle);
-        });
-    }
-
-    map.on('singleclick', function(event) {
-        var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
-            return feature;
-        });
-
-        if (feature) {
-            mostraSegnalazione(feature);
-        } else {
-            var coordinate = event.coordinate;
-            document.getElementById('modal').style.display = 'block';
-            overlay.setPosition(coordinate);
-        }
-    });
-
-    map.getView().on('change:resolution', updateMarkerScale);
-
-    window.onload = loadMarkers;
+    window.onload = function() {
+        loadMarkers();
+        filterMarkers();
+    };
 </script>
 </body>
 </html>
