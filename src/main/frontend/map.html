@@ -199,13 +199,14 @@
                 return response.json();
             })
             .then(data => {
+                console.log('Fetched segnalazioni:', data);
                 data.forEach(segnalazione => {
                     console.log('Adding segnalazione:', segnalazione);
                     var marker = new ol.Feature({
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
                         commento: segnalazione.commento,
-                        idSegnalazione: segnalazione.id_segnalazione
+                        idSegnalazione: segnalazione.id
                     });
 
                     var zoom = map.getView().getZoom();
@@ -220,7 +221,10 @@
                     markerLayer.getSource().addFeature(marker);
                 });
             })
-            .catch(error => console.error('Errore:', error));
+            .catch(error => {
+                console.error('Errore:', error);
+                alert('Failed to load segnalazioni.');
+            });
     }
 
     function updateMarkerScale() {
