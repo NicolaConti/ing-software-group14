@@ -9,8 +9,5 @@
         <module name="ProgettoIngSoftware" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="ingsoftware" target="1.5" />
-    </bytecodeTargetLevel>
   </component>
 </project>
