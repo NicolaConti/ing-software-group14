@@ -107,8 +107,13 @@
 
     var selectedMarker = null;
 
-    function getMarkerScale(zoom) {
-        return 0.05 + (zoom - 13) * 0.005;
+    function getMarkerStyle(zoom) {
+        return new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'marker-icon.png',
+                scale: getMarkerScale(zoom)
+            })
+        });
     }
 
     function aggiungiSegnalazione() {
@@ -265,7 +270,7 @@
         source.getFeatures().forEach(function(feature) {
             var featureGravity = feature.get('gravity');
             if (selectedGravity === 0 || featureGravity === selectedGravity) {
-                feature.setStyle(null); // Reset to default style
+                feature.setStyle(getMarkerStyle(map.getView().getZoom())); // Reset to default style
             } else {
                 feature.setStyle(new ol.style.Style(null)); // Hide marker by setting an empty style
             }
@@ -275,9 +280,7 @@
     function updateMarkerScale() {
         var zoom = map.getView().getZoom();
         markerLayer.getSource().getFeatures().forEach(function(feature) {
-            var iconStyle = feature.getStyle();
-            iconStyle.getImage().setScale(getMarkerScale(zoom));
-            feature.setStyle(iconStyle);
+            feature.setStyle(getMarkerStyle(zoom));
         });
     }
 
