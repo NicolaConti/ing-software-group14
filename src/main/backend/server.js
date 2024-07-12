@@ -500,7 +500,7 @@ app.post('/delete-commento', async (req, res) => {
         if (!segnalazione) {
             return res.status(404).send('Segnalazione not found');
         }
-        segnalazione.feedbacks.splice(id_commento+1, 1);
+        segnalazione.feedbacks.splice(id_commento, 1);
         await segnalazione.save();
         res.sendStatus(200);
     }

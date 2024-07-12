@@ -319,6 +319,7 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);
                 }
+                alert('RESPONSE RECEIVED');
                 console.log('Response received'); // Log when the response is received
                 return response.json();
             })
@@ -336,7 +337,7 @@
         event.preventDefault();
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const id_commento = formData.get('id_commento'); // Get the id_segnalazione from the form data
+        const id_commento = formData.get('id_commento') + 1; // Get the id_segnalazione from the form data
 
         // Send request to server
         const response = await fetch('/delete-commento', {
