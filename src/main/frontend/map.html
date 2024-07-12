@@ -151,14 +151,7 @@
                         });
 
                         var zoom = map.getView().getZoom();
-                        var iconStyle = new ol.style.Style({
-                            image: new ol.style.Icon({
-                                src: 'marker-icon.png',
-                                scale: getMarkerScale(zoom)
-                            })
-                        });
-
-                        marker.setStyle(iconStyle);
+                        marker.setStyle(getMarkerStyle(zoom));
                         markerLayer.getSource().addFeature(marker);
 
                         document.getElementById('modal').style.display = 'none';
@@ -237,18 +230,12 @@
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
                         commento: segnalazione.commento,
-                        idSegnalazione: segnalazione.id // Ensure idSegnalazione is set
+                        idSegnalazione: segnalazione.id, // Ensure idSegnalazione is set
+                        gravity: segnalazione.gravity // Ensure gravity is set
                     });
 
                     var zoom = map.getView().getZoom();
-                    var iconStyle = new ol.style.Style({
-                        image: new ol.style.Icon({
-                            src: 'marker-icon.png',
-                            scale: getMarkerScale(zoom)
-                        })
-                    });
-
-                    marker.setStyle(iconStyle);
+                    marker.setStyle(getMarkerStyle(zoom));
                     markerLayer.getSource().addFeature(marker);
                 });
             })
@@ -284,9 +271,7 @@
     function updateMarkerScale() {
         var zoom = map.getView().getZoom();
         markerLayer.getSource().getFeatures().forEach(function(feature) {
-            var iconStyle = feature.getStyle();
-            iconStyle.getImage().setScale(getMarkerScale(zoom));
-            feature.setStyle(iconStyle);
+            feature.setStyle(getMarkerStyle(zoom));
         });
     }
 
