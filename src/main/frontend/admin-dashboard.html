@@ -306,8 +306,15 @@
 <script>
     document.getElementById('fetch-all-commenti').addEventListener('click', function(event) {
         event.preventDefault();
+        const id_segnalaz = document.getElementById('id_segnalaz').value;
         console.log('Click on "Fetch All Commenti" button');
-        fetch('/fetch-commenti')
+        fetch('/fetch-commenti', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id_segnalaz: id_segnalaz })
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);

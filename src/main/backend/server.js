@@ -442,6 +442,9 @@ app.post('/unsuspend-user', async (req, res) => {
 app.get('/fetch-segnalazioni', async (req, res) => {
     try {
         const Segnalaz = await Segnalazione.find().exec();
+        if (!Segnalaz) {
+            return res.status(404).send('Segnalazione not found');
+        }
         const result = Segnalaz.map(history => `${history.id}, ${history.tipo}, ${history.commento}`);
         console.log('Processed Result:', result); // Log processed result
         res.json(result);
