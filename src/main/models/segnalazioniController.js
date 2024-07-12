@@ -11,7 +11,8 @@ exports.creaSegnalazione = async (req, res) => {
             tipo: tipo,
             commento: commento,
             data: data,
-            coordinate: coordinate
+            coordinate: coordinate,
+            gravity: gravity
         });
 
         const segnalazioneSalvata = await nuovaSegnalazione.save();
