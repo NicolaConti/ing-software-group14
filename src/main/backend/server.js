@@ -141,7 +141,7 @@ app.post('/SignIn', async (req, res) => {
         const newUser = new RegUser({ username, password, email, suspended: "0" });
         await newUser.save();
 
-        res.status(200).json({ redirect: 'map.html' });
+        res.status(200).json({ redirect: 'login.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });
