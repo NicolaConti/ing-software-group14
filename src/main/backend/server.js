@@ -150,7 +150,7 @@ app.post('/SignIn', async (req, res) => {
         await newUser.save();
 
         // Send success response
-        res.status(200).json({ message: "Sign In successful" ,redirect: 'login.html' });
+        res.status(200).json({ redirect: 'map.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });
@@ -346,7 +346,6 @@ app.post('/admin-logout', async (req, res) => {
         //default redirect
     }
 });
-
 app.get('/login-history', async (req, res) => {
     try {
         const loginHistories = await LoginHistory.find().exec();

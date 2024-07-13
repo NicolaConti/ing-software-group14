@@ -3,7 +3,7 @@ const { getNextSequence } = require('../models/counter');
 
 exports.creaSegnalazione = async (req, res) => {
     try {
-        const { tipo, commento, data, coordinate } = req.body;
+        const { tipo, commento, data, coordinate, gravity } = req.body;
         const nextId = await getNextSequence('segnalazioneId');
 
         const nuovaSegnalazione = new Segnalazione({
@@ -11,7 +11,8 @@ exports.creaSegnalazione = async (req, res) => {
             tipo: tipo,
             commento: commento,
             data: data,
-            coordinate: coordinate
+            coordinate: coordinate,
+            gravity: gravity
         });
 
         const segnalazioneSalvata = await nuovaSegnalazione.save();
