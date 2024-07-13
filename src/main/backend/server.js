@@ -18,6 +18,8 @@ const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
 
+let id_segnalazione;
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -144,7 +146,7 @@ app.post('/SignIn', async (req, res) => {
             return res.status(400).json({ message: 'email already taken' });
         }
 
-        const newUser = new RegUser({ username, password, email, auth: "0", suspended: "0" });
+        const newUser = new RegUser({ username, password, email, suspended: "0" });
         await newUser.save();
 
         // Send success response
@@ -173,8 +175,6 @@ app.post('/login', async (req, res) => {
             newLogin.date = dateTime;
             console.log(newLogin);
             await newLogin.save();
-            await RegUser.updateOne({username: user.username}, {$set: {auth: "1"}}).exec();
-            console.log("User " + user.username + " auth updated successfully (login)");
             res.status(200).json({ redirect: 'map.html' });
         } else {
             console.log("Login failed");
@@ -292,14 +292,10 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 // Route per il logout
 app.post('/logout', async (req, res) => {
     if(req.session.username){
-        await RegUser.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
-            res.redirect('login.html');
-            console.log("Logout Successful");
-            console.log("User " + req.session.username + " auth updated successfully (logout)");
-            req.session.destroy(); // Destroy the session
-        }).catch((err) => {
-            console.error("Error updating user " + req.session.username + " auth (logout): ", err);
-        });
+        res.redirect('login.html');
+        console.log("Logout Successful");
+        console.log("User " + req.session.username + " logout successful");
+        req.session.destroy(); // Destroy the session
     }
     else{
         res.redirect('login.html');
@@ -326,8 +322,7 @@ app.post('/admin-login', async (req, res) => {
         if (admin) {
             // User found, login successful
             req.session.username = admin.username; // Store username in session
-            await Admin.updateOne({username: admin.username}, {$set: {auth: "1"}}).exec();
-            console.log("Admin " + admin.username + " auth updated successfully (login)");
+            console.log("Admin " + admin.username + " logged in correctly");
             res.status(200).json({ redirect: 'admin-dashboard.html' });
         } else {
             // User not found or password incorrect, login failed
@@ -341,19 +336,16 @@ app.post('/admin-login', async (req, res) => {
 
 app.post('/admin-logout', async (req, res) => {
     if(req.session.username){
-        await Admin.updateOne({username: req.session.username}, {$set: {auth: "0"}}).exec().then(() => {
-            console.log("Logout Successful");
-            console.log("Admin " + req.session.username + " auth updated successfully (logout)");
-            req.session.destroy(); // Destroy the session
-            res.redirect('login.html');
-        }).catch((err) => {
-            console.error("Error updating admin " + req.session.username + " auth (logout): ", err);
-        });
+        console.log("Logout Successful");
+        console.log("Admin " + req.session.username + " logout successful");
+        req.session.destroy(); // Destroy the session
+        res.redirect('login.html');
     } else {
         res.redirect('login.html');
+        console.log("Logout not correctly executed, check logs");
+        //default redirect
     }
 });
-
 app.get('/login-history', async (req, res) => {
     try {
         const loginHistories = await LoginHistory.find().exec();
@@ -478,6 +470,39 @@ app.post('/close-segnalazione', async (req, res) => {
     } catch (err) {
         console.error("Error during close-segnalazione:", err);
         res.status(500).send('Internal server error');
+    }
+});
+
+app.post('/fetch-commenti', async (req, res) => {
+    try {
+        id_segnalazione = req.body.id_segnalaz;
+        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).send('Segnalazione not found');
+        }
+        const result = segnalazione.feedbacks.map(feedback => `${feedback.username}, ${feedback.commento}`);
+        console.log('Processed Result:', result); // Log processed result
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/delete-commento', async (req, res) => {
+    try{
+        const id_commento = req.body.id_commento;
+        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+        if (!segnalazione) {
+            return res.status(404).send('Segnalazione not found');
+        }
+        segnalazione.feedbacks.splice(id_commento+1, 1);
+        await segnalazione.save();
+        res.sendStatus(200);
+    }
+    catch(error){
+        console.error('Error deleting commento:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
