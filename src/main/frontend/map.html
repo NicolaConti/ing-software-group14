@@ -193,7 +193,7 @@
     `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
 
-        document.getElementById('commenti').innerHTML = '';
+        //document.getElementById('commenti').innerHTML = '';
 
         fetch(`/api/segnalazioni/${idSegnalazione}/feedbacks`)
             .then(response => response.json())
