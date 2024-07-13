@@ -61,6 +61,10 @@
     button:hover {
       background-color: #0056b3;
     }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -97,6 +101,23 @@
       <button type="submit">Entra come ospite</button>
     </div>
   </form>
+  <form id="form-delete-account" class="hidden">
+    <h3>Delete Account</h3>
+    <div class="form-group">
+      <label for="delete-username"></label>
+      <input type="text" id="delete-username" name="username" placeholder="Username" required>
+    </div>
+    <div class="form-group">
+      <label for="delete-email"></label>
+      <input type="email" id="delete-email" name="email" placeholder="Email" required>
+    </div>
+    <div class="form-group">
+      <label for="delete-password"></label>
+      <input type="password" id="delete-password" name="password" placeholder="Password" required>
+    </div>
+    <button type="submit">Delete Account</button>
+  </form>
+  <button id="delete-account-button">Delete Account</button>
 </div>
 <script>
   document.getElementById('login-form').addEventListener('submit', async (event) => {
@@ -105,7 +126,6 @@
     const username = formData.get('username');
     const password = formData.get('password');
 
-    // Send login request to server
     const response = await fetch('/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -116,11 +136,34 @@
       const data = await response.json();
       alert('Login successful');
       window.location.href = data.redirect;
-      //manda a map
     } else {
       alert('Login failed: ' + await response.text());
     }
+  });
 
+  document.getElementById('delete-account-button').addEventListener('click', () => {
+    document.getElementById('form-delete-account').classList.toggle('hidden');
+  });
+
+  document.getElementById('form-delete-account').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const username = formData.get('username');
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    const response = await fetch('/delete-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    });
+
+    if (response.ok) {
+      alert('Account deleted successfully');
+      window.location.href = '/login';
+    } else {
+      alert('Account deletion failed: ' + await response.text());
+    }
   });
 </script>
 </body>
