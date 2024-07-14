@@ -229,24 +229,16 @@ app.get('/api/segnalazioni', async (req, res) => {
 });
 
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate, gravity } = req.body;
+    const { tipo, commento, coordinate } = req.body;
 
     try {
-        // Assuming user authentication is handled and username is stored in session
-        const username = req.session.username;
-        if (!username) {
-            return res.status(401).json({ message: 'User not authenticated' });
-        }
-
         const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
             id: newId,
-            username,
             tipo,
             commento,
             coordinate,
-            gravity,
             feedbacks: []
         });
 
@@ -257,7 +249,6 @@ app.post('/api/segnalazioni', async (req, res) => {
         res.status(500).json({ message: 'Errore interno del server' });
     }
 });
-
 
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const segnalazioneId = Number(req.params.id);
