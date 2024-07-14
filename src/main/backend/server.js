@@ -229,13 +229,12 @@ app.get('/api/segnalazioni', async (req, res) => {
 });
 
 app.post('/api/segnalazioni', async (req, res) => {
-    const {username, tipo, commento, coordinate } = req.body;
+    const { tipo, commento, coordinate } = req.body;
 
     try {
         const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
-            username,
             id: newId,
             tipo,
             commento,
@@ -512,44 +511,6 @@ app.post('/delete-feedback', async (req, res) => {
     } catch (error) {
         console.error('Error deleting feedback:', error); // Log the error
         res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.post('/password-recovery', async (req, res) => {
-    const { username, email } = req.body;
-
-    try {
-        const user = await RegUser.findOne({ username, email }).exec();
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Generate a temporary recovery token (in a real application, use a more secure method)
-        const recoveryToken = Math.random().toString(36).substring(2);
-
-        // Configure the email transport using your SMTP server details
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: 'your-email@gmail.com',
-                pass: 'your-email-password'
-            }
-        });
-
-        // Send the recovery email
-        const mailOptions = {
-            from: 'your-email@gmail.com',
-            to: email,
-            subject: 'Recupero Password',
-            text: `Ciao ${username},\n\nClicca sul seguente link per recuperare la tua password: https://your-website.com/reset-password?token=${recoveryToken}\n\nSe non hai richiesto il recupero della password, ignora questa email.\n\nSaluti,\nIl Team`
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        res.status(200).json({ message: 'Recovery email sent successfully' });
-    } catch (error) {
-        console.error('Error sending recovery email:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
