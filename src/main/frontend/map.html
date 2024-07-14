@@ -112,7 +112,6 @@
     }
 
     function aggiungiSegnalazione() {
-        var username=document.getElementById('username').value;
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
@@ -127,7 +126,6 @@
                 return response.json();
             })
             .then(data => {
-                username= data.username;
                 // User is authenticated, proceed with adding segnalazione
                 fetch('/api/segnalazioni', {
                     method: 'POST',
@@ -135,7 +133,6 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        username: username,
                         tipo: tipo,
                         commento: commento,
                         coordinate: ol.proj.toLonLat(coordinate),
@@ -146,7 +143,6 @@
                     .then(data => {
                         // Create and add the marker only after successful POST request
                         var marker = new ol.Feature({
-                            username: username,
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
                             commento: commento,
