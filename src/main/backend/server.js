@@ -486,15 +486,20 @@ app.post('/fetch-feedbacks', async (req, res) => {
 });
 
 app.post('/delete-feedback', async (req, res) => {
-    const { feedback_id } = req.body;
+    const { segnalazione_id2, username, commento } = req.body;
 
     try {
-        const segnalazione = await Segnalazione.findOne({ 'feedbacks._id': feedback_id }).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id2 }).exec();
         if (!segnalazione) {
+            return res.status(404).json({ message: 'Segnalazione not found' });
+        }
+
+        const feedback = segnalazione.feedbacks.find(f => f.username === username && f.commento === commento);
+        if (!feedback) {
             return res.status(404).json({ message: 'Feedback not found' });
         }
 
-        segnalazione.feedbacks.id(feedback_id).remove();
+        segnalazione.feedbacks = segnalazione.feedbacks.filter(f => f._id.toString() !== feedback._id.toString());
         await segnalazione.save();
 
         res.status(200).json({ message: 'Feedback deleted successfully' });
@@ -503,6 +508,7 @@ app.post('/delete-feedback', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/', 'login.html'));

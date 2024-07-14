@@ -146,14 +146,22 @@
         <span id="feedback-list" style="margin: 5px"></span>
     </div>
 
-        <form id="delete-feedback-form" action="/delete-feedback" method="post">
-            <div class="form-group">
-                <label for="feedback_id">ID Feedback da eliminare:</label>
-                <input type="text" name="feedback_id" id="feedback_id" placeholder="ID Feedback" required>
-            </div>
-            <button id="delete-feedback-button">Cancella Feedback</button>
-        </form>
-    </div>
+    <form id="delete-feedback-form" action="/delete-feedback" method="post">
+        <div class="form-group">
+            <label for="segnalazione_id2">ID Segnalazione:</label>
+            <input type="text" name="segnalazione_id2" id="segnalazione_id2" placeholder="ID Segnalazione" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username del feedback:</label>
+            <input type="text" name="username" id="username3" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+            <label for="commento">Commento del feedback:</label>
+            <input type="text" name="commento" id="commento" placeholder="Commento" required>
+        </div>
+        <button id="delete-feedback-button">Cancella Feedback</button>
+    </form>
+</div>
 <script>
     document.getElementById('fetch-login-history').addEventListener('click', function(event) {
         event.preventDefault();
@@ -321,7 +329,7 @@
             })
             .then(data => {
                 const container = document.getElementById('feedback-list');
-                container.innerHTML = '<ul>' + data.map(item => `<li>ID: ${item._id} - ${item.username}: ${item.commento}</li>`).join('') + '</ul>';
+                container.innerHTML = '<ul>' + data.map(item => `<li>${item.username}: ${item.commento}</li>`).join('') + '</ul>';
             })
             .catch(error => console.error('Error fetching feedback:', error));
     });
@@ -330,17 +338,19 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const feedback_id = formData.get('feedback_id');
+        const segnalazione_id2 = formData.get('segnalazione_id2');
+        const username = formData.get('username3');
+        const commento = formData.get('commento');
 
         // Send request to server
         const response = await fetch('/delete-feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ feedback_id })
+            body: JSON.stringify({ segnalazione_id2, username, commento })
         });
 
         if (response.ok) {
-            alert('Feedback ' + feedback_id + ' deleted successfully');
+            alert('Feedback deleted successfully');
         } else {
             alert('Delete failed: ' + await response.text());
         }
