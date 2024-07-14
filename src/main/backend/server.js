@@ -486,28 +486,34 @@ app.post('/fetch-feedbacks', async (req, res) => {
 });
 
 app.post('/delete-feedback', async (req, res) => {
-    const { segnalazione_id2, username, commento } = req.body;
+    const { segnalazione_id, username, commento } = req.body;
 
     try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id2 }).exec();
+        console.log('Received delete-feedback request:', req.body); // Log the received request
+
+        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
+            console.log('Segnalazione not found for id:', segnalazione_id); // Log if segnalazione not found
             return res.status(404).json({ message: 'Segnalazione not found' });
         }
 
         const feedback = segnalazione.feedbacks.find(f => f.username === username && f.commento === commento);
         if (!feedback) {
+            console.log('Feedback not found for username and commento:', username, commento); // Log if feedback not found
             return res.status(404).json({ message: 'Feedback not found' });
         }
 
         segnalazione.feedbacks = segnalazione.feedbacks.filter(f => f._id.toString() !== feedback._id.toString());
         await segnalazione.save();
 
+        console.log('Feedback deleted successfully:', feedback); // Log successful deletion
         res.status(200).json({ message: 'Feedback deleted successfully' });
     } catch (error) {
-        console.error('Error deleting feedback:', error);
+        console.error('Error deleting feedback:', error); // Log the error
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 
 app.get('*', (req, res) => {
