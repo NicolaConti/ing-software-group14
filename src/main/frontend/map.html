@@ -82,6 +82,8 @@
 </form>
 
 <script>
+    import {data} from "express-session/session/cookie";
+
     var map = new ol.Map({
         target: 'map',
         layers: [
@@ -112,6 +114,7 @@
     }
 
     function aggiungiSegnalazione() {
+        var username= document.getElementById(data.username).value;
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
@@ -133,6 +136,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        username: username,
                         tipo: tipo,
                         commento: commento,
                         coordinate: ol.proj.toLonLat(coordinate),

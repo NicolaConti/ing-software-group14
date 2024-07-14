@@ -229,12 +229,13 @@ app.get('/api/segnalazioni', async (req, res) => {
 });
 
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
+    const {username, tipo, commento, coordinate } = req.body;
 
     try {
         const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
+            username,
             id: newId,
             tipo,
             commento,
@@ -436,7 +437,7 @@ app.post('/unsuspend-user', async (req, res) => {
 app.get('/fetch-segnalazioni', async (req, res) => {
     try {
         const Segnalaz = await Segnalazione.find().exec();
-        const result = Segnalaz.map(history => `${history.id}, ${history.tipo}, ${history.commento}`);
+        const result = Segnalaz.map(history => `${history.username}, ${history.id}, ${history.tipo}, ${history.commento}`);
         console.log('Processed Result:', result);
         res.json(result);
     } catch (error) {
