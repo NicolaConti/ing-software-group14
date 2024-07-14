@@ -7,6 +7,7 @@ const feedbackSchema = new mongoose.Schema({
 
 const segnalazioneSchema = new mongoose.Schema({
     id: Number,
+    username: String,
     tipo: String,
     commento: String,
     data: Date,
