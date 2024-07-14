@@ -148,10 +148,6 @@
 
     <form id="delete-feedback-form" action="/delete-feedback" method="post">
         <div class="form-group">
-            <label for="segnalazione_id2">ID Segnalazione:</label>
-            <input type="text" name="segnalazione_id2" id="segnalazione_id2" placeholder="ID Segnalazione" required>
-        </div>
-        <div class="form-group">
             <label for="username">Username del feedback:</label>
             <input type="text" name="username" id="username3" placeholder="Username" required>
         </div>
@@ -338,7 +334,6 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const segnalazione_id2 = formData.get('segnalazione_id2');
         const username = formData.get('username3');
         const commento = formData.get('commento');
 
@@ -346,7 +341,7 @@
         const response = await fetch('/delete-feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ segnalazione_id2, username, commento })
+            body: JSON.stringify({username, commento })
         });
 
         if (response.ok) {

@@ -486,14 +486,9 @@ app.post('/fetch-feedbacks', async (req, res) => {
 });
 
 app.post('/delete-feedback', async (req, res) => {
-    const { segnalazione_id2, username, commento } = req.body;
+    const { username, commento } = req.body;
 
     try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id2 }).exec();
-        if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione not found' });
-        }
-
         const feedback = segnalazione.feedbacks.find(f => f.username === username && f.commento === commento);
         if (!feedback) {
             return res.status(404).json({ message: 'Feedback not found' });
