@@ -338,7 +338,7 @@
         event.preventDefault(); // Prevent default form submission
 
         const formData = new FormData(event.target); // Use event.target to get the form
-        const segnalazione_id2 = formData.get('segnalazione_id2');
+        const segnalazione_id2 = document.getElementById('segnalazione_id2').value;
         const username = formData.get('username3');
         const commento = formData.get('commento');
 
