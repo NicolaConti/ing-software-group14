@@ -6,6 +6,7 @@ const feedbackSchema = new mongoose.Schema({
 }, { _id: true }); // Enable automatic _id for subdocuments
 
 const segnalazioneSchema = new mongoose.Schema({
+    username: String,
     id: Number,
     tipo: String,
     commento: String,

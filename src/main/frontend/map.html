@@ -126,6 +126,8 @@
                 return response.json();
             })
             .then(data => {
+                let currentUser;
+                currentUser = data.username;
                 // User is authenticated, proceed with adding segnalazione
                 fetch('/api/segnalazioni', {
                     method: 'POST',
@@ -133,6 +135,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        username: username,
                         tipo: tipo,
                         commento: commento,
                         coordinate: ol.proj.toLonLat(coordinate),
@@ -143,6 +146,7 @@
                     .then(data => {
                         // Create and add the marker only after successful POST request
                         var marker = new ol.Feature({
+                            username: currentUser,
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
                             commento: commento,

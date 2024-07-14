@@ -229,12 +229,13 @@ app.get('/api/segnalazioni', async (req, res) => {
 });
 
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
+    const {username, tipo, commento, coordinate } = req.body;
 
     try {
         const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
+            username,
             id: newId,
             tipo,
             commento,
