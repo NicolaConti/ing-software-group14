@@ -143,16 +143,24 @@
 
         <span id="all-commenti-text" style="margin: 5px"></span>
 
-        <form id="cancella-commento-form" action="/delete-commento" method="post">
+        <form id="fetch-feedback-form">
             <div class="form-group">
-                <label for="id_commento"></label>
-                <input type="text" name="id_commento" id="id_commento" placeholder="ID commento da eliminare" required>
+                <label for="segnalazione_id">ID Segnalazione per visualizzare i feedback:</label>
+                <input type="text" name="segnalazione_id" id="segnalazione_id" placeholder="ID Segnalazione" required>
             </div>
+            <button id="fetch-feedback-button">Visualizza Feedback</button>
+        </form>
+        <span id="feedback-list" style="margin: 5px"></span>
+    </div>
 
-            <button id="cancella-commento-button">Cancella commento</button>
+        <form id="delete-feedback-form" action="/delete-feedback" method="post">
+            <div class="form-group">
+                <label for="feedback_id">ID Feedback da eliminare:</label>
+                <input type="text" name="feedback_id" id="feedback_id" placeholder="ID Feedback" required>
+            </div>
+            <button id="delete-feedback-button">Cancella Feedback</button>
         </form>
     </div>
-</div>
 <script>
     document.getElementById('fetch-login-history').addEventListener('click', function(event) {
         event.preventDefault();
@@ -299,6 +307,49 @@
             alert('Segnalazione ' + id_segnalazione + ' closed successfully');
         } else {
             alert('Closing failed: ' + await response.text());
+        }
+    });
+
+    document.getElementById('fetch-feedback-button').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        const segnalazione_id = document.getElementById('segnalazione_id').value;
+
+        // Fetch feedback for the given segnalazione ID
+        fetch('/fetch-feedbacks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ segnalazione_id })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById('feedback-list');
+                container.innerHTML = '<ul>' + data.map(item => `<li>ID: ${item._id} - ${item.username}: ${item.commento}</li>`).join('') + '</ul>';
+            })
+            .catch(error => console.error('Error fetching feedback:', error));
+    });
+
+    document.getElementById('delete-feedback-form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(event.target); // Use event.target to get the form
+        const feedback_id = formData.get('feedback_id');
+
+        // Send request to server
+        const response = await fetch('/delete-feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedback_id })
+        });
+
+        if (response.ok) {
+            alert('Feedback ' + feedback_id + ' deleted successfully');
+        } else {
+            alert('Delete failed: ' + await response.text());
         }
     });
 </script>

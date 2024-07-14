@@ -17,7 +17,7 @@ const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
 
-let id_segnalazione;
+//let id_segnalazione;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -468,35 +468,38 @@ app.post('/close-segnalazione', async (req, res) => {
     }
 });
 
-app.post('/fetch-commenti', async (req, res) => {
+app.post('/fetch-feedbacks', async (req, res) => {
+    const { segnalazione_id } = req.body;
+
     try {
-        id_segnalazione = req.body.id_segnalaz;
-        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
-            return res.status(404).send('Segnalazione not found');
+            return res.status(404).json({ message: 'Segnalazione not found' });
         }
-        const result = segnalazione.feedbacks.map(feedback => `${feedback.username}, ${feedback.commento}`);
-        console.log('Processed Result:', result);
-        res.json(result);
+
+        const feedbacks = segnalazione.feedbacks;
+        res.status(200).json(feedbacks);
     } catch (error) {
-        console.error('Error fetching comments:', error);
+        console.error('Error fetching feedback:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-app.post('/delete-commento', async (req, res) => {
-    try{
-        const id_commento = req.body.id_commento;
-        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}).exec();
+app.post('/delete-feedback', async (req, res) => {
+    const { feedback_id } = req.body;
+
+    try {
+        const segnalazione = await Segnalazione.findOne({ 'feedbacks._id': feedback_id }).exec();
         if (!segnalazione) {
-            return res.status(404).send('Segnalazione not found');
+            return res.status(404).json({ message: 'Feedback not found' });
         }
-        segnalazione.feedbacks.splice(id_commento+1, 1);
+
+        segnalazione.feedbacks.id(feedback_id).remove();
         await segnalazione.save();
-        res.sendStatus(200);
-    }
-    catch(error){
-        console.error('Error deleting commento:', error);
+
+        res.status(200).json({ message: 'Feedback deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting feedback:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

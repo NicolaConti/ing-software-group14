@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+const feedbackSchema = new mongoose.Schema({
+    username: String,
+    commento: String
+}, { _id: true }); // Enable automatic _id for subdocuments
+
 const segnalazioneSchema = new mongoose.Schema({
     id: Number,
     tipo: String,
@@ -7,11 +12,8 @@ const segnalazioneSchema = new mongoose.Schema({
     data: Date,
     coordinate: [Number],
     gravity: Number, // 1 to 5
-    feedbacks: [{
-        username: String,
-        commento: String
-    }]
-}, {collection: 'Segnalazioni'});
+    feedbacks: [feedbackSchema]
+}, { collection: 'Segnalazioni' });
 
 const Segnalazione = mongoose.model('Segnalazioni', segnalazioneSchema);
 
