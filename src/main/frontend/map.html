@@ -133,6 +133,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        username: data.username,
                         tipo: tipo,
                         commento: commento,
                         coordinate: ol.proj.toLonLat(coordinate),

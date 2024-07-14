@@ -230,12 +230,14 @@ app.get('/api/segnalazioni', async (req, res) => {
 
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
+    const username= req.session.username;
 
     try {
         const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
             id: newId,
+            username,
             tipo,
             commento,
             coordinate,
