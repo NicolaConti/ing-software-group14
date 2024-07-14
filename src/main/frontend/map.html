@@ -112,6 +112,7 @@
     }
 
     function aggiungiSegnalazione() {
+        var username=document.getElementById('username').value;
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
@@ -126,7 +127,7 @@
                 return response.json();
             })
             .then(data => {
-                var username= data.username;
+                username= data.username;
                 // User is authenticated, proceed with adding segnalazione
                 fetch('/api/segnalazioni', {
                     method: 'POST',
