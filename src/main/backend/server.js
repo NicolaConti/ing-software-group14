@@ -158,7 +158,7 @@ app.post('/SignIn', async (req, res) => {
         await newUser.save();
 
         //reindirizzamento automatico a schermata di login
-        alert("Registrazione eseguita con successo");
+        console.log("Registrazione eseguita con successo");
         res.status(200).json({ redirect: 'login.html' });
     } catch (err) {
         //log eventuale errore per debug e display su pagina HTML
@@ -347,7 +347,7 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 app.post('/logout', async (req, res) => {
     if(req.session.username){
         req.session.destroy();
-        alert("Logout successful");
+        console.log("Logout successful");
         //utente autenticato, devo chiudere la sessione
         res.redirect('login.html');
         //console.log("User " + req.session.username + " logout successful");
