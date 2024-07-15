@@ -14,7 +14,6 @@ jobs:
     environment: production
 
     env:
-      SUPER_SECRET: ${{ secrets.SUPER_SECRET }} # Must be set as a GitHub secret
       DB_URL: ${{ secrets.DB_URL }} # Must be set as a GitHub secret
       
     runs-on: ubuntu-latest
@@ -36,10 +35,17 @@ jobs:
     - run: npm test
 
   deploy:
-    name: Trigger deployment
-    uses: sws2apps/render-deployment@main
-    with:
-      apiKey: ${{secrets.RENDER_API_KEY}}
-      serviceId: ${{secrets.RENDER_ID}}
-      multipleDeployment: false
+    name: Wait for Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Render GitHub Action
+        uses: Bounceapp/render-action@0.8.0
+        with:
+          render-token: ${{ secrets.RENDER_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          service-id: ${{ secrets.RENDER_ID }}
+          retries: 20
+          wait: 16000
+          sleep: 30000
   

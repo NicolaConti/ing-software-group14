@@ -10,8 +10,9 @@ const routes = require('../routes/routes');
 
 //costanti per express e mongodb
 const app = express();
+require('dotenv').config();
 const PORT = process.env.PORT || 3000;
-const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
+const url = process.env.DB_URL;
 
 //modelli e funzioni da models per queries a mongodb
 const { getNextSequence } = require('../models/counter');
