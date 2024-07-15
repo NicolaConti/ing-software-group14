@@ -49,7 +49,8 @@
         }
 
         .form-group {
-            place-items: center;
+            text-align: center;
+            align-items: center;
         }
         #close-segnalazione-form,
         #suspend-user-form,
@@ -144,24 +145,29 @@
             <button id="fetch-feedback-button">Visualizza Feedback</button>
         </form>
         <span id="feedback-list" style="margin: 5px"></span>
+
+        <br>
+
+        <form id="delete-feedback-form" action="/delete-feedback" method="post">
+            <div class="form-group">
+                <label for="segnalazione_id2">ID Segnalazione:</label>
+                <input type="text" name="segnalazione_id" id="segnalazione_id2" placeholder="ID Segnalazione" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Username del feedback:</label>
+                <input type="text" name="username" id="username3" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <label for="commento3">Commento del feedback:</label>
+                <input type="text" name="commento" id="commento3" placeholder="Commento" required>
+            </div>
+            <button id="delete-feedback-button">Cancella Feedback</button>
+        </form>
     </div>
 
-    <form id="delete-feedback-form" action="/delete-feedback" method="post">
-        <div class="form-group">
-            <label for="segnalazione_id2">ID Segnalazione:</label>
-            <input type="text" name="segnalazione_id" id="segnalazione_id2" placeholder="ID Segnalazione" required>
-        </div>
-        <div class="form-group">
-            <label for="username">Username del feedback:</label>
-            <input type="text" name="username" id="username3" placeholder="Username" required>
-        </div>
-        <div class="form-group">
-            <label for="commento3">Commento del feedback:</label>
-            <input type="text" name="commento" id="commento3" placeholder="Commento" required>
-        </div>
-        <button id="delete-feedback-button">Cancella Feedback</button>
-    </form>
+
 </div>
+
 <script>
     document.getElementById('fetch-login-history').addEventListener('click', function(event) {
         event.preventDefault();
@@ -310,14 +316,17 @@
             alert('Closing failed: ' + await response.text());
         }
     });
+</script>
 
+<script>
     document.getElementById('fetch-feedback-button').addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default form submission
+
         const segnalazione_id = document.getElementById('segnalazione_id').value;
 
         // Fetch feedback for the given segnalazione ID
         fetch('/fetch-feedbacks', {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ segnalazione_id })
         })
@@ -333,7 +342,9 @@
             })
             .catch(error => console.error('Error fetching feedback:', error));
     });
+</script>
 
+<script>
     document.getElementById('delete-feedback-form').addEventListener('submit', async (event) => {
         event.preventDefault(); // Prevent default form submission
 
