@@ -347,7 +347,7 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 app.post('/logout', async (req, res) => {
     if(req.session.username){
         req.session.destroy();
-        console.log("Logout successful");
+        //console.log("Logout successful");
         //utente autenticato, devo chiudere la sessione
         res.redirect('login.html');
         //console.log("User " + req.session.username + " logout successful");
@@ -399,7 +399,7 @@ app.post('/admin-logout', async (req, res) => {
         req.session.destroy();
         //chiudo sessione e redirect a pagina default
         //console.log("Admin " + req.session.username + " logout successful");
-        console.log("Logout successful");
+        //console.log("Logout successful");
         res.redirect('login.html');
     } else {
         //redirect ma con errore mostrato su pagina
