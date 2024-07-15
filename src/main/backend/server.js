@@ -13,6 +13,7 @@ const app = express();
 require('dotenv').config();
 const PORT = process.env.PORT || 3000;
 const url = process.env.DB_URL;
+console.log(process.env.DB_URL);
 
 //modelli e funzioni da models per queries a mongodb
 const { getNextSequence } = require('../models/counter');
