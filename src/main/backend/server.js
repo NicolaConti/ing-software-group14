@@ -399,7 +399,7 @@ app.post('/admin-logout', async (req, res) => {
         req.session.destroy();
         //chiudo sessione e redirect a pagina default
         //console.log("Admin " + req.session.username + " logout successful");
-        alert("Logout successful");
+        console.log("Logout successful");
         res.redirect('login.html');
     } else {
         //redirect ma con errore mostrato su pagina
