@@ -217,12 +217,12 @@ app.post('/delete-account', async (req, res) => {
 
         //controllo che la query non ritorni null
         if (!user) {
-            return res.status(401).json('Invalid credentials' );
+            return res.status(401).json('Credenziali invalide' );
         }
         //query per cancellare da mongodb
         await RegUser.deleteOne({ _id: user._id });
 
-        res.status(200).json('Account deleted successfully' );
+        res.status(200).json('Account cancellato con successo' );
     } catch (err) {
         //console.error("Error deleting account:", err);
         res.status(500).json('Internal server error' );
@@ -265,7 +265,7 @@ app.get('/api/segnalazioni', async (req, res) => {
 
 // POST per creazione nuova segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
-    const { tipo, commento, coordinate } = req.body;
+    const { tipo, commento, coordinate, gravity } = req.body;
 
     try {
         //nuovo id sequenziale da Counter in DB
@@ -276,6 +276,7 @@ app.post('/api/segnalazioni', async (req, res) => {
             tipo,
             commento,
             coordinate,
+            gravity,
             feedbacks: []
         });
 
@@ -342,6 +343,7 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
 app.post('/logout', async (req, res) => {
     if(req.session.username){
         req.session.destroy();
+        alert("Logout successful");
         //utente autenticato, devo chiudere la sessione
         res.redirect('login.html');
         //console.log("User " + req.session.username + " logout successful");
@@ -351,7 +353,8 @@ app.post('/logout', async (req, res) => {
         res.redirect('login.html');
         //console.log("Guest user redirect successful");
     }
-
+    //se non entra in nessuno dei due casi, errore
+    res.status(500).send('Internal server error');
 });
 
 // POST per login amministratore
@@ -392,12 +395,15 @@ app.post('/admin-logout', async (req, res) => {
         req.session.destroy();
         //chiudo sessione e redirect a pagina default
         //console.log("Admin " + req.session.username + " logout successful");
+        alert("Logout successful");
         res.redirect('login.html');
     } else {
         //redirect ma con errore mostrato su pagina
         res.redirect('login.html');
         //console.log("Logout NON avvenuto con successo");
+        res.status(500).send('Internal server error');
     }
+
 });
 
 // GET per ricevere la lista di accessi (presa da DB)
@@ -498,7 +504,7 @@ app.post('/unsuspend-user', async (req, res) => {
             //se ho trovato l'utente, lo sospendo
             await RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec();
             //console.log("User unsuspended updated successfully");
-            res.send('Rimossa sospensione con successo');
+            res.send('Sospensione rimossa con successo');
         } else {
             //username non trovato nel DB
             res.status(401).send('Username non valido');
@@ -559,14 +565,14 @@ app.post('/fetch-feedbacks', async (req, res) => {
     try {
         const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
-            return res.status(404).json({ message: 'Segnalazione not found' });
+            return res.status(404).json('Segnalazione non trovata' );
         }
 
         const feedbacks = segnalazione.feedbacks;
         res.status(200).json(feedbacks);
     } catch (error) {
-        console.error('Error fetching feedback:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        //console.error('Error fetching feedback:', error);
+        res.status(500).json('Internal Server Error' );
     }
 });
 
@@ -575,28 +581,28 @@ app.post('/delete-feedback', async (req, res) => {
     const { segnalazione_id, username, commento } = req.body;
 
     try {
-        console.log('Received delete-feedback request:', req.body); // Log the received request
+        //console.log('Received delete-feedback request:', req.body); // Log the received request
 
         const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
-            console.log('Segnalazione not found for id:', segnalazione_id); // Log if segnalazione not found
-            return res.status(404).json({ message: 'Segnalazione not found' });
+            //console.log('Segnalazione not found for id:', segnalazione_id); // Log if segnalazione not found
+            return res.status(404).json('Segnalazione not found' );
         }
 
         const feedback = segnalazione.feedbacks.find(f => f.username === username && f.commento === commento);
         if (!feedback) {
             console.log('Feedback not found for username and commento:', username, commento); // Log if feedback not found
-            return res.status(404).json({ message: 'Feedback not found' });
+            return res.status(404).json({ message: 'Feedback non trovato' });
         }
 
         segnalazione.feedbacks = segnalazione.feedbacks.filter(f => f._id.toString() !== feedback._id.toString());
         await segnalazione.save();
 
         console.log('Feedback deleted successfully:', feedback); // Log successful deletion
-        res.status(200).json({ message: 'Feedback deleted successfully' });
+        res.status(200).json('Feedback cancellato con successo' );
     } catch (error) {
         console.error('Error deleting feedback:', error); // Log the error
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json('Internal Server Error' );
     }
 });
 
