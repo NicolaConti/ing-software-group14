@@ -555,7 +555,7 @@ app.post('/close-segnalazione', async (req, res) => {
 });
 
 // GET per recuperare tutti i feedback di una segnalazione, dato il suo ID
-app.get('/fetch-feedbacks', async (req, res) => {
+app.post('/fetch-feedbacks', async (req, res) => {
     const { segnalazione_id } = req.body;
 
     try {

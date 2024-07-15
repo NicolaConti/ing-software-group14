@@ -86,11 +86,6 @@
       <button type="submit">Sei amministratore? Accedi da qui</button>
     </div>
   </form>
-  <form id="form-recovery" action="/recovery" method="get">
-    <div class="forgot-password">
-      <button type="submit">Hai dimenticato la password?</button>
-    </div>
-  </form>
   <form id="form-registrazione" action="/registrazione" method="get">
     <div class="register-link">
       <button type="submit">Non hai un account? Registrati</button>
@@ -115,9 +110,9 @@
       <label for="delete-password"></label>
       <input type="password" id="delete-password" name="password" placeholder="Password" required>
     </div>
-    <button type="submit">Confirm Delete Account</button>
+    <button type="submit">Conferma</button>
   </form>
-  <button id="delete-account-button">Delete Account</button>
+  <button id="delete-account-button">Elimina account</button>
 </div>
 <script>
   document.getElementById('login-form').addEventListener('submit', async (event) => {

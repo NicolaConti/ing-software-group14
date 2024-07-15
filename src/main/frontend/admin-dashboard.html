@@ -326,7 +326,7 @@
 
         // Fetch feedback for the given segnalazione ID
         fetch('/fetch-feedbacks', {
-            method: 'GET',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ segnalazione_id })
         })
