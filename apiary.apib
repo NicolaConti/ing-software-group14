@@ -3,51 +3,6 @@
 Welcome to the API documentation for *Mappatura Disservizi Urbani*. This API provides endpoints for user registration, accessing the user interface as well as 
 the administration section of the webapp. Below you will find detailed information about each endpoint, including request and response examples.
 
-## Group Interfaces
-### Get Root Page [GET /]
-+ Response 200 (text/html)
-
-    + Body
-    
-            login.html
-
-### Access the Map Page [GET /map]
-+ Response 200 (text/html)
-
-    + Body
-    
-            map.html
-
-### Get Login Page [GET /login]
-
-+ Response 200 (text/html)
-
-    + Body
-    
-            login.html
-
-### Get Registration Page [GET /registrazione]
-
-+ Response 200 (text/html)
-
-    + Body
-    
-            registrazione.html
-
-### Get Recovery Page [GET /recovery]
-+ Response 200 (text/html)
-
-    + Body
-    
-            recovery.html
-
-### Get Admin Login Page [GET /admin]
-+ Response 200 (text/html)
-
-    + Body
-    
-            admin-login.html
-
 ## Group User
 ### Register [POST /SignIn]
 + Request (application/json)
@@ -73,7 +28,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
 
             {
-                "message": "wrong email format" or "wrong password format" or "email already taken"
+                "wrong email format" or "wrong password format" or "email already taken"
             }
 
 + Response 401 (application/json)
@@ -81,7 +36,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
 
             {
-                "message": "username already taken"
+                "username already taken"
             }
 
 + Response 500 (application/json)
@@ -89,7 +44,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
 
             {
-                "message": "Internal server error"
+                "Internal server error"
             }
 
 ### Login [POST /login]
@@ -184,7 +139,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "message": "Logout successful"
+                "Logout successful"
             }
 + Response 500 (application/json)
 
@@ -209,7 +164,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
             }
 
 ### Get Registered Users [GET /fetch-users]
@@ -239,7 +194,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "message": "Suspend successful"
+                "Utente sospeso con successo"
             }
             
 + Response 400 (application/json)
@@ -247,7 +202,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "User is already suspended"
+                "L'utente è già sospeso"
             }
             
 + Response 401 (application/json)
@@ -255,7 +210,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Invalid username"
+               "Username non valido"
             }
             
 + Response 500 (application/json)
@@ -263,7 +218,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
             }
 
 ### Get Suspended Users [GET /fetch-suspended]
@@ -281,7 +236,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
             }
 
 ### Unsuspend User [POST /unsuspend-user]
@@ -294,7 +249,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "message": "Unsuspend successful"
+                "Sospensione rimossa con successo"
             }
             
 + Response 401 (application/json)
@@ -302,7 +257,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Invalid username"
+                "Username non valido"
             }
             
 + Response 500 (application/json)
@@ -310,7 +265,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
             }
 
 ### Get Segnalazioni [GET /fetch-segnalazioni]
@@ -328,7 +283,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
             }
 
 ### Close Segnalazione [POST /close-segnalazione]
@@ -341,7 +296,7 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "message": "Closing segnalazione successful"
+                "Segnalazione chiusa con successo"
             }
             
 + Response 401 (application/json)
@@ -349,12 +304,287 @@ the administration section of the webapp. Below you will find detailed informati
     + Body
     
             {
-                "error": "Invalid ID"
+                "ID segnalazione non valido"
             }
 + Response 500 (application/json)
 
     + Body
     
             {
-                "error": "Internal server error"
+                "Internal server error"
+            }
+   
+### Get Feedbacks [POST /fetch-feedbacks]
++ Request (application/json)
+
+    + Attributes
+        - id: `string` (required) - The ID of the segnalazione to fetch feedbacks from.
++ Response 200 (application/json)
+
+    + Body
+    
+            [
+                "username, commento",
+                ...
+            ]
+
++ Response 404
+
+    + Body
+
+            {
+                "Segnalazione non trovata"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+    
+            {
+                "Internal server error"
+            }
+
+### Delete feedback [POST /delete-feedback]
++ Request (application/json)
+
+    + Attributes
+        - id: `string` (required) - The ID of the segnalazione from which the feedback needs to be removed.
+        - username: `string` (required) - The username which wrote the feedback.
+        - commento: `string` (required) - The body of the feedback.
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "Feedback cancellato con successo"
+            }
+
++ Response 404
+
+    + Body
+
+            {
+                "Segnalazione non trovata" or "Feedback non trovato"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+    
+            {
+                "Internal server error"
+            }
+
+### Delete account [POST /delete-account]
++ Request (application/json)
+
+    + Attributes
+        - username:  `string` (required) - The username of the account to delete.
+        - email:  `string` (required) - The email of the account to delete.
+        - password:  `string` (required) - The password of the account to delete.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "Account cancellato con successo"
+            }
+
++ Response 401 (application/json)
+
+    + Body
+    
+            {
+                "Credenziali invalide"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Internal server error"
+            }
+
+
+### Check user session [GET /api/username]
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "username": "example_user"
+            }
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "Not logged in"
+            }
+
+### Retrieve segnalazione by ID [POST /api/segnalazione/:id]
++ Request
+
+    + Attributes
+        - id:  `string` (required) - The id of the segnalazione to retrieve.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id", "title", "description"
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "Segnalazione non trovata"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Internal server error"
+            }
+
+### Retrieve all segnalazioni [GET /api/segnalazioni]
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id", "title", "description",
+                ...
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Internal server error"
+            }
+
+### Create new segnalazione [POST /api/segnalazioni]
++ Request
+
+    + Attributes
+        - tipo:  `string` (required) - The type of the segnalazione to create.
+        - commento:  `string` (required) - The body of the segnalazione to create.
+        - coordinates:  `string` (required) - The coordinates of the segnalazione to create.
+        - gravity:  `string` (required) - The gravity of the segnalazione to create.
+        
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                tipo: "Problema stradale",
+                commento: "Esempio",
+                coordinate: "11.1388","46.0769",
+                gravity: "3"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Internal server error"
+            }
+
+### Retrieve feedbacks for a specific segnalazione by its ID [GET /api/segnalazioni/:id/feedbacks]
++ Request
+
+    + Attributes
+        - id:  `string` (required) - The id of the segnalazione to retrieve feedbacks from.
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "username": "Utente1",
+                    "commento": "Example feedback comment",
+                },
+                ...
+            ]
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "ID della segnalazione non valido"
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "Segnalazione non trovata"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Errore interno del server"
+            }
+
+### Create a feedback for a specific segnalazione [POST /api/segnalazioni/:id/feedbacks]
++ Request (application/json)
+    
+    + Attributes
+        - id:  `string` (required) - The id of the segnalazione to add a feedback to.
+
+    + Body
+
+            {
+                "username": "Utente1",
+                "commento": "This is an example commento."
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "Feedback aggiunto con successo"
+            }
+
++ Response 400 (application/json)
+
+    + Body
+
+            {
+                "ID della segnalazione non valido"
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+                "Segnalazione non trovata"
+            }
+
++ Response 500 (application/json)
+
+    + Body
+
+            {
+                "Errore interno del server"
             }
