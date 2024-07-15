@@ -83,10 +83,6 @@ app.get('/registrazione', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/registrazione.html'));
 });
 
-app.get('/recovery', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/recovery.html'));
-});
-
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin-login.html'));
 });
@@ -157,15 +153,20 @@ app.post('/login', async (req, res) => {
 
         console.log("Query result:", user);
         if (user) {
-            req.session.username = user.username;
-            console.log("Session after login:", req.session);
-            const dateTime = getCurrentDateTime();
-            const newLogin = new LoginHistory();
-            newLogin.username = username;
-            newLogin.date = dateTime;
-            console.log(newLogin);
-            await newLogin.save();
-            res.status(200).json({ redirect: 'map.html' });
+            if(user.suspended === '1'){
+                res.status(401).json( { message: 'Utente sospeso, contattare l\'amministratore' } )
+            }
+            else {
+                req.session.username = user.username;
+                console.log("Session after login:", req.session);
+                const dateTime = getCurrentDateTime();
+                const newLogin = new LoginHistory();
+                newLogin.username = username;
+                newLogin.date = dateTime;
+                console.log(newLogin);
+                await newLogin.save();
+                res.status(200).json({redirect: 'map.html'});
+            }
         } else {
             console.log("Login failed");
             res.status(401).json({ message: 'wrong username or password' });
@@ -346,6 +347,7 @@ app.post('/admin-logout', async (req, res) => {
         console.log("Logout not correctly executed, check logs");
     }
 });
+
 app.get('/login-history', async (req, res) => {
     try {
         const loginHistories = await LoginHistory.find().exec();
