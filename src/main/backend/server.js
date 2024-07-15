@@ -358,7 +358,7 @@ app.post('/logout', async (req, res) => {
         //console.log("Guest user redirect successful");
     }
     //se non entra in nessuno dei due casi, errore
-    res.status(500).send('Internal server error');
+    //res.status(500).send('Internal server error');
 });
 
 // POST per login amministratore
@@ -405,7 +405,6 @@ app.post('/admin-logout', async (req, res) => {
         //redirect ma con errore mostrato su pagina
         res.redirect('login.html');
         //console.log("Logout NON avvenuto con successo");
-        res.status(500).send('Internal server error');
     }
 
 });
