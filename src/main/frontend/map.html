@@ -32,6 +32,17 @@
     </style>
 </head>
 <body>
+<!-- Filter Dropdown -->
+<label for="filterGravity">Filtra per Gravità:</label>
+<select id="filterGravity" onchange="filterMarkers()">
+    <option value="0">Tutti</option>
+    <option value="1">1 - Bassa</option>
+    <option value="2">2 - Moderata</option>
+    <option value="3">3 - Alta</option>
+    <option value="4">4 - Molto Alta</option>
+    <option value="5">5 - Massima</option>
+</select>
+
 <div id="map" class="map"></div>
 
 <div id="modal">
@@ -41,6 +52,15 @@
         <option value="Rifiuti">Rifiuti</option>
         <option value="Incidente">Incidente</option>
         <option value="Altro">Altro</option>
+    </select>
+    <br>
+    <label for="gravity">Gravità:</label>
+    <select id="gravity">
+        <option value="1">1 - Bassa</option>
+        <option value="2">2 - Moderata</option>
+        <option value="3">3 - Alta</option>
+        <option value="4">4 - Molto Alta</option>
+        <option value="5">5 - Massima</option>
     </select>
     <br>
     <label for="commento">Commento:</label>
@@ -95,6 +115,7 @@
         var tipo = document.getElementById('tipo').value;
         var commento = document.getElementById('commento').value;
         var coordinate = overlay.getPosition();
+        var gravity = parseInt(document.getElementById('gravity').value, 10);
 
         // Check if the user is authenticated
         fetch('/api/username')
@@ -114,7 +135,8 @@
                     body: JSON.stringify({
                         tipo: tipo,
                         commento: commento,
-                        coordinate: ol.proj.toLonLat(coordinate)
+                        coordinate: ol.proj.toLonLat(coordinate),
+                        gravity: gravity
                     })
                 })
                     .then(response => response.json())
@@ -124,18 +146,12 @@
                             geometry: new ol.geom.Point(coordinate),
                             tipo: tipo,
                             commento: commento,
-                            idSegnalazione: data.id // Ensure idSegnalazione is set
+                            idSegnalazione: data.id,
+                            gravity: gravity // Ensure gravity is set
                         });
 
                         var zoom = map.getView().getZoom();
-                        var iconStyle = new ol.style.Style({
-                            image: new ol.style.Icon({
-                                src: 'marker-icon.png',
-                                scale: getMarkerScale(zoom)
-                            })
-                        });
-
-                        marker.setStyle(iconStyle);
+                        marker.setStyle(getMarkerStyle(zoom));
                         markerLayer.getSource().addFeature(marker);
 
                         document.getElementById('modal').style.display = 'none';
@@ -163,6 +179,7 @@
         var tipo = marker.get('tipo');
         var commento = marker.get('commento');
         var idSegnalazione = marker.get('idSegnalazione'); // Get idSegnalazione
+        var gravity= marker.get('gravity');
 
         if (!idSegnalazione) {
             console.error('idSegnalazione is undefined');
@@ -172,9 +189,24 @@
         var dettagli = `
         <p>Tipo: ${tipo}</p>
         <p>Commento: ${commento}</p>
+        <p>Gravity: ${gravity}</p>
         <p>Coordinate: ${ol.proj.toLonLat(coordinate)}</p>
     `;
         document.getElementById('dettagliSegnalazione').innerHTML = dettagli;
+
+        //document.getElementById('commenti').innerHTML = '';
+
+        fetch(`/api/segnalazioni/${idSegnalazione}/feedbacks`)
+            .then(response => response.json())
+            .then(commenti => {
+                var commentiDiv = document.getElementById('commenti');
+                commenti.forEach(commento => {
+                    var commentElement = document.createElement('p');
+                    commentElement.textContent = commento;
+                    commentiDiv.appendChild(commentElement);
+                });
+            })
+            .catch(error => console.error('Errore:', error));
 
         document.getElementById('commentModal').style.display = 'block';
 
@@ -200,18 +232,12 @@
                         geometry: new ol.geom.Point(ol.proj.fromLonLat(segnalazione.coordinate)),
                         tipo: segnalazione.tipo,
                         commento: segnalazione.commento,
-                        idSegnalazione: segnalazione.id // Ensure idSegnalazione is set
+                        idSegnalazione: segnalazione.id, // Ensure idSegnalazione is set
+                        gravity: segnalazione.gravity // Ensure gravity is set
                     });
 
                     var zoom = map.getView().getZoom();
-                    var iconStyle = new ol.style.Style({
-                        image: new ol.style.Icon({
-                            src: 'marker-icon.png',
-                            scale: getMarkerScale(zoom)
-                        })
-                    });
-
-                    marker.setStyle(iconStyle);
+                    marker.setStyle(getMarkerStyle(zoom));
                     markerLayer.getSource().addFeature(marker);
                 });
             })
@@ -221,12 +247,33 @@
             });
     }
 
+    function getMarkerStyle(zoom) {
+        return new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'marker-icon.png',
+                scale: getMarkerScale(zoom)
+            })
+        });
+    }
+
+    function filterMarkers() {
+        var selectedGravity = parseInt(document.getElementById('filterGravity').value, 10);
+        var source = markerLayer.getSource();
+
+        source.getFeatures().forEach(function(feature) {
+            var featureGravity = feature.get('gravity');
+            if (selectedGravity === 0 || featureGravity === selectedGravity) {
+                feature.setStyle(getMarkerStyle(map.getView().getZoom())); // Reset to default style
+            } else {
+                feature.setStyle(new ol.style.Style(null)); // Hide marker by setting an empty style
+            }
+        });
+    }
+
     function updateMarkerScale() {
         var zoom = map.getView().getZoom();
         markerLayer.getSource().getFeatures().forEach(function(feature) {
-            var iconStyle = feature.getStyle();
-            iconStyle.getImage().setScale(getMarkerScale(zoom));
-            feature.setStyle(iconStyle);
+            feature.setStyle(getMarkerStyle(zoom));
         });
     }
 
@@ -246,7 +293,11 @@
 
     map.getView().on('change:resolution', updateMarkerScale);
 
-    window.onload = loadMarkers;
+    // Call filterMarkers initially to apply any default filter
+    window.onload = function() {
+        loadMarkers();
+        filterMarkers();
+    };
 </script>
 </body>
 </html>

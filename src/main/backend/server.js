@@ -4,23 +4,21 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
-const MongoStore = require('connect-mongo'); // Import connect-mongo
+const MongoStore = require('connect-mongo');
 const routes = require('../routes/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const url = "mongodb+srv://continicolaa:NikyZen01@ingsoftwaredb.nocpa6u.mongodb.net/ingsoftware_db?retryWrites=true&w=majority&appName=IngSoftwareDB";
 
-// Importa moduli per MongoDB
 const { getNextSequence } = require('../models/counter');
 const RegUser = require('../models/RegUser');
 const Admin = require('../models/Admin');
 const LoginHistory = require('../models/LoginHistory');
 const Segnalazione = require('../models/Segnalazione');
 
-let id_segnalazione;
+//let id_segnalazione;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,7 +31,6 @@ app.use(express.static(path.join(__dirname, '../frontend'), {
 }));
 app.use('/api', routes);
 
-// Connect to MongoDB
 mongoose.connect(url, {
     serverApi: {
         version: "1",
@@ -49,20 +46,19 @@ mongoose.connect(url, {
         console.error("Error connecting to MongoDB:", err);
     });
 
-// Session setup with MongoStore
 app.use(session({
-    secret: 'mySecretKey', // replace with your own secret key
+    secret: 'mySecretKey',
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: url,
         collectionName: 'sessions',
-        ttl: 14 * 24 * 60 * 60, // session expiration in seconds (14 days)
-        autoRemove: 'native', // auto-remove expired sessions
+        ttl: 14 * 24 * 60 * 60,
+        autoRemove: 'native',
     }),
     cookie: {
-        secure: false, // Set to true if you're using HTTPS
-        maxAge: 14 * 24 * 60 * 60 * 1000 // cookie expiration (14 days)
+        secure: false,
+        maxAge: 14 * 24 * 60 * 60 * 1000
     }
 }));
 
@@ -71,7 +67,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static files
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
@@ -96,7 +91,6 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin-login.html'));
 });
 
-// Utility functions to validate email and password formats
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
@@ -110,7 +104,7 @@ function validatePassword(password) {
 function getCurrentDateTime() {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -119,13 +113,11 @@ function getCurrentDateTime() {
     return `${year}/${month}/${day} @ ${hours}:${minutes}:${seconds}`;
 }
 
-// Route for user registration
 app.post('/SignIn', async (req, res) => {
     const { username, password, email } = req.body;
 
     console.log('Received data:', req.body);
 
-    // Validate email and password format
     if (!validateEmail(email)) {
         return res.status(400).json({ message: 'wrong email format' });
     }
@@ -149,15 +141,13 @@ app.post('/SignIn', async (req, res) => {
         const newUser = new RegUser({ username, password, email, suspended: "0" });
         await newUser.save();
 
-        // Send success response
-        res.status(200).json({ message: "Sign In successful" ,redirect: 'login.html' });
+        res.status(200).json({ redirect: 'login.html' });
     } catch (err) {
         console.error("Error registering user:", err);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// Route for user login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -167,7 +157,7 @@ app.post('/login', async (req, res) => {
 
         console.log("Query result:", user);
         if (user) {
-            req.session.username = user.username; // Store username in session
+            req.session.username = user.username;
             console.log("Session after login:", req.session);
             const dateTime = getCurrentDateTime();
             const newLogin = new LoginHistory();
@@ -186,7 +176,27 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Route to retrieve the current user's username
+app.post('/delete-account', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    console.log('Received delete account request:', req.body);
+
+    try {
+        const user = await RegUser.findOne({ username, email, password }).exec();
+
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        await RegUser.deleteOne({ _id: user._id });
+
+        res.status(200).json({ message: 'Account deleted successfully' });
+    } catch (err) {
+        console.error("Error deleting account:", err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.get('/api/username', (req, res) => {
     if (req.session.username) {
         res.status(200).json({ username: req.session.username });
@@ -195,10 +205,9 @@ app.get('/api/username', (req, res) => {
     }
 });
 
-// Rotte per ottenere i dettagli di una segnalazione e i suoi feedback
 app.get('/api/segnalazioni/:id', async (req, res) => {
     try {
-        const segnalazione = await Segnalazione.findOne({id: req.params.id}, null, null).exec();
+        const segnalazione = await Segnalazione.findOne({ id: req.params.id }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -219,15 +228,14 @@ app.get('/api/segnalazioni', async (req, res) => {
     }
 });
 
-// Route to create a new segnalazione
 app.post('/api/segnalazioni', async (req, res) => {
     const { tipo, commento, coordinate } = req.body;
 
     try {
-        const newId = await getNextSequence('segnalazioneId'); // Utilizza la funzione per ottenere il prossimo ID
+        const newId = await getNextSequence('segnalazioneId');
 
         const newSegnalazione = new Segnalazione({
-            id: newId, // Usa il nuovo ID generato
+            id: newId,
             tipo,
             commento,
             coordinate,
@@ -245,13 +253,12 @@ app.post('/api/segnalazioni', async (req, res) => {
 app.get('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const segnalazioneId = Number(req.params.id);
 
-    // Verifica che l'ID della segnalazione sia un numero valido
     if (isNaN(segnalazioneId)) {
         return res.status(400).json({ message: 'ID della segnalazione non valido' });
     }
 
     try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }, null, null).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -266,13 +273,12 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     const { username, commento } = req.body;
     const segnalazioneId = Number(req.params.id);
 
-    // Verifica che l'ID della segnalazione sia un numero valido
     if (isNaN(segnalazioneId)) {
         return res.status(400).json({ message: 'ID della segnalazione non valido' });
     }
 
     try {
-        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }, null, null).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazioneId }).exec();
         if (!segnalazione) {
             return res.status(404).json({ message: 'Segnalazione non trovata' });
         }
@@ -289,13 +295,12 @@ app.post('/api/segnalazioni/:id/feedbacks', async (req, res) => {
     }
 });
 
-// Route per il logout
 app.post('/logout', async (req, res) => {
     if(req.session.username){
         res.redirect('login.html');
         console.log("Logout Successful");
         console.log("User " + req.session.username + " logout successful");
-        req.session.destroy(); // Destroy the session
+        req.session.destroy();
     }
     else{
         res.redirect('login.html');
@@ -308,7 +313,6 @@ app.post('/admin-login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     try {
-        // Log the incoming username and password
         console.log("Attempting login with:", username, password);
 
         let query = Admin.findOne();
@@ -317,15 +321,12 @@ app.post('/admin-login', async (req, res) => {
 
         const admin = await query.exec();
 
-        // Log the result of the query (for debugging)
         console.log("Query result:", admin);
         if (admin) {
-            // User found, login successful
-            req.session.username = admin.username; // Store username in session
+            req.session.username = admin.username;
             console.log("Admin " + admin.username + " logged in correctly");
             res.status(200).json({ redirect: 'admin-dashboard.html' });
         } else {
-            // User not found or password incorrect, login failed
             res.status(401).send('Invalid username or password');
         }
     } catch (err) {
@@ -338,20 +339,18 @@ app.post('/admin-logout', async (req, res) => {
     if(req.session.username){
         console.log("Logout Successful");
         console.log("Admin " + req.session.username + " logout successful");
-        req.session.destroy(); // Destroy the session
+        req.session.destroy();
         res.redirect('login.html');
     } else {
         res.redirect('login.html');
         console.log("Logout not correctly executed, check logs");
-        //default redirect
     }
 });
-
 app.get('/login-history', async (req, res) => {
     try {
         const loginHistories = await LoginHistory.find().exec();
         const result = loginHistories.map(history => `${history.username}, ${history.date}`);
-        console.log('Processed Result:', result); // Log processed result
+        console.log('Processed Result:', result);
         res.json(result);
     } catch (error) {
         console.error('Error fetching login history:', error);
@@ -363,7 +362,7 @@ app.get('/fetch-users', async (req, res) => {
     try {
         const RegUsers = await RegUser.find().exec();
         const result = RegUsers.map(history => `${history.username}`);
-        console.log('Processed Result:', result); // Log processed result
+        console.log('Processed Result:', result);
         res.json(result);
     } catch (error) {
         console.error('Error fetching login history:', error);
@@ -382,18 +381,15 @@ app.post('/suspend-user', async (req, res) => {
         console.log("Query result:", user);
 
         if (user) {
-            // User found
             if (user.suspended === "1") {
                 return res.status(400).send('User is already suspended');
             }
 
-            // Update the user's suspended status to "1"
             await RegUser.updateOne({ username: user.username }, { $set: { suspended: "1" } });
             console.log("User suspended successfully");
 
             res.send('Suspend successful');
         } else {
-            // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
@@ -404,9 +400,9 @@ app.post('/suspend-user', async (req, res) => {
 
 app.get('/fetch-suspended', async (req, res) => {
     try {
-        const RegUsers = await RegUser.find({suspended: "1"}, null, null ).exec();
+        const RegUsers = await RegUser.find({suspended: "1"}).exec();
         const result = RegUsers.map(history => `${history.username}`);
-        console.log('Processed Result:', result); // Log processed result
+        console.log('Processed Result:', result);
         res.json(result);
     } catch (error) {
         console.error('Error fetching login history:', error);
@@ -425,12 +421,10 @@ app.post('/unsuspend-user', async (req, res) => {
         console.log("Query result:", user);
 
         if (user) {
-            // User found
             await RegUser.updateOne({username: user.username}, {$set: {suspended: "0"}}).exec();
             console.log("User unsuspended updated successfully");
             res.send('Unsuspend successful');
         } else {
-            // User not found
             res.status(401).send('Invalid username');
         }
     } catch (err) {
@@ -442,11 +436,8 @@ app.post('/unsuspend-user', async (req, res) => {
 app.get('/fetch-segnalazioni', async (req, res) => {
     try {
         const Segnalaz = await Segnalazione.find().exec();
-        if (!Segnalaz) {
-            return res.status(404).send('Segnalazione not found');
-        }
         const result = Segnalaz.map(history => `${history.id}, ${history.tipo}, ${history.commento}`);
-        console.log('Processed Result:', result); // Log processed result
+        console.log('Processed Result:', result);
         res.json(result);
     } catch (error) {
         console.error('Error fetching login history:', error);
@@ -465,7 +456,7 @@ app.post('/close-segnalazione', async (req, res) => {
         console.log("Query result:", segnalazione);
 
         if (segnalazione) {
-            await Segnalazione.deleteOne({id: segnalazione.id} ).exec();
+            await Segnalazione.deleteOne({id: segnalazione.id}).exec();
             console.log("Segnalazione close updated successfully");
             res.send('Closing segnalazione successful');
         } else {
@@ -477,35 +468,48 @@ app.post('/close-segnalazione', async (req, res) => {
     }
 });
 
-app.post('/fetch-commenti', async (req, res) => {
+app.post('/fetch-feedbacks', async (req, res) => {
+    const { segnalazione_id } = req.body;
+
     try {
-        id_segnalazione = req.body.id_segnalaz;
-        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
-            return res.status(404).send('Segnalazione not found');
+            return res.status(404).json({ message: 'Segnalazione not found' });
         }
-        const result = segnalazione.feedbacks.map(feedback => `${feedback.username}, ${feedback.commento}`);
-        console.log('Processed Result:', result); // Log processed result
-        res.json(result);
+
+        const feedbacks = segnalazione.feedbacks;
+        res.status(200).json(feedbacks);
     } catch (error) {
-        console.error('Error fetching comments:', error);
+        console.error('Error fetching feedback:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-app.post('/delete-commento', async (req, res) => {
-    try{
-        const id_commento = req.body.id_commento;
-        const segnalazione = await Segnalazione.findOne({id: id_segnalazione}, null, null).exec();
+app.post('/delete-feedback', async (req, res) => {
+    const { segnalazione_id, username, commento } = req.body;
+
+    try {
+        console.log('Received delete-feedback request:', req.body); // Log the received request
+
+        const segnalazione = await Segnalazione.findOne({ id: segnalazione_id }).exec();
         if (!segnalazione) {
-            return res.status(404).send('Segnalazione not found');
+            console.log('Segnalazione not found for id:', segnalazione_id); // Log if segnalazione not found
+            return res.status(404).json({ message: 'Segnalazione not found' });
         }
-        segnalazione.feedbacks.splice(id_commento, 1);
+
+        const feedback = segnalazione.feedbacks.find(f => f.username === username && f.commento === commento);
+        if (!feedback) {
+            console.log('Feedback not found for username and commento:', username, commento); // Log if feedback not found
+            return res.status(404).json({ message: 'Feedback not found' });
+        }
+
+        segnalazione.feedbacks = segnalazione.feedbacks.filter(f => f._id.toString() !== feedback._id.toString());
         await segnalazione.save();
-        res.sendStatus(200);
-    }
-    catch(error){
-        console.error('Error deleting commento:', error);
+
+        console.log('Feedback deleted successfully:', feedback); // Log successful deletion
+        res.status(200).json({ message: 'Feedback deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting feedback:', error); // Log the error
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

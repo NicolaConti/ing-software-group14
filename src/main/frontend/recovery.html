@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #008000; /* Colore verde per lo sfondo */
+            background-color: #008000;
             margin: 0;
             padding: 0;
         }
@@ -23,7 +23,7 @@
 
         h2 {
             text-align: center;
-            color: #8B4513; /* Colore marrone per il titolo */
+            color: #8B4513;
         }
 
         .form-group {
@@ -77,5 +77,32 @@
         <button class="btn" type="submit">Torna al login utente</button>
     </form>
 </div>
+
+<script>
+    document.getElementById('recovery-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const username = formData.get('username');
+        const email = formData.get('email');
+
+        try {
+            const response = await fetch('/password-recovery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email })
+            });
+
+            if (response.ok) {
+                alert('Email di recupero inviata con successo');
+            } else {
+                alert('Errore nell\'invio dell\'email di recupero: ' + await response.text());
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Errore nell\'invio dell\'email di recupero');
+        }
+    });
+</script>
 </body>
 </html>
