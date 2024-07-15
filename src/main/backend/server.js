@@ -348,7 +348,6 @@ app.post('/logout', async (req, res) => {
     }
     else{
         //utente ospite, solo redirect
-        alert("Logout avvenuto con successo");
         res.redirect('login.html');
         //console.log("Guest user redirect successful");
     }
@@ -393,12 +392,11 @@ app.post('/admin-logout', async (req, res) => {
         req.session.destroy();
         //chiudo sessione e redirect a pagina default
         //console.log("Admin " + req.session.username + " logout successful");
-        alert("Logout avvenuto con successo");
         res.redirect('login.html');
     } else {
         //redirect ma con errore mostrato su pagina
         res.redirect('login.html');
-        alert("Logout NON avvenuto con successo");
+        //console.log("Logout NON avvenuto con successo");
     }
 });
 
