@@ -22,17 +22,23 @@ Il nostro progetto riguarda la creazione di una webapp che da la possibilità ai
 
 -Segnalazioni rapide agli enti di competenza
 
->Installazione e utilizzo
+>Installazione in locale (per debug e testing rapido) e utilizzo
 
 Verificare che tutte le dependencies relative a node.js siano state installate correttamente.
 
 Nel terminale, eseguire:
 ```
-cd src/main
+cd src/main/backend
+npm cache clean --force
+npm install
 node server.js
 ```
 
-Recarsi sul browser all'indirizzo https://ing-software-group14.onrender.com dove comparirà la pagina di login.
+Recarsi sul browser all'indirizzo http://localhost:3000 dove comparirà la pagina di login.
+
+>Accesso al deploy in cloud e utilizzo
+
+Recarsi semplicemente all'indirizzo https://ing-software-group14.onrender.com dove il servizio risulterà deployato.
 
 Le credenziali di testing sono:
 ```
